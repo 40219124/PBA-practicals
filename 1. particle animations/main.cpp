@@ -120,7 +120,7 @@ void MouseCallback(GLFWwindow *window, double xPos, double yPos)
 	lastX = xPos;
 	lastY = yPos;
 
-	camera.ProcessMouseMovement((GLfloat) xOffset, (GLfloat) yOffset);
+	camera.ProcessMouseMovement((GLfloat)xOffset, (GLfloat)yOffset);
 }
 
 
@@ -208,8 +208,8 @@ void draw(const Mesh &mesh)
 int main()
 {
 	// init renderer
-	initRender();	
-			
+	initRender();
+
 	// create ground plane
 	Mesh plane = Mesh::Mesh();
 	// scale it up x5
@@ -220,27 +220,25 @@ int main()
 	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
 	particle1.translate(glm::vec3(0.0f, 2.5f, 0.0f));
 	particle1.scale(glm::vec3(.1f, .1f, .1f));
-	particle1.rotate((GLfloat) M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+	particle1.rotate((GLfloat)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
 	// allocate shader
 	particle1.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
 
 	/*
 	CREATE THE PARTICLE(S) YOU NEED TO COMPLETE THE TASKS HERE
 	*/
-	
 
 
-	GLfloat firstFrame = (GLfloat) glfwGetTime();
+	GLfloat firstFrame = (GLfloat)glfwGetTime();
 	float acc = 1.1f;
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Set frame time
-		GLfloat currentFrame = (GLfloat)  glfwGetTime() - firstFrame;
+		GLfloat currentFrame = (GLfloat)glfwGetTime() - firstFrame;
 		// the animation can be sped up or slowed down by multiplying currentFrame by a factor.
 		currentFrame *= 1.5f;
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
 
 		/*
 		**	INTERACTION
@@ -259,25 +257,29 @@ int main()
 		*/
 
 		// 1 - make particle fall at constant speed using the translate method
-
+		//particle1.translate(glm::vec3(0.0f, -deltaTime, 0.0f));
 
 		// 2 - same as above using the setPos method
-		
+		//particle1.setPos(glm::vec3(0.0f, -currentFrame, 0.0f));
 
 		// 3 - make particle oscillate above the ground plance
-		
-
+		//particle1.setPos(glm::vec3(0.0f, sinf(currentFrame*M_PI) + 1.0f, 0.0f));
+		//particle1.translate(glm::vec3(0.0f, (sinf(currentFrame*M_PI) - sinf(lastFrame*M_PI)) /* 10.0f*/, 0.0f));
 		// 4 - particle animation from initial velocity and acceleration
-		
-
+		//particle1.translate(glm::vec3(2.0f*deltaTime, (3.0f*currentFrame) + ((-9.8f*currentFrame*currentFrame) / 2.0f), 0.0f));
+		//particle1.setPos(glm::vec3(0.0f, 1.0f, 0.0f) + glm::vec3(2.0f, 8.0f, 0.0f) * currentFrame + (glm::vec3(0.0f, -9.8f, 0.0f)*currentFrame*currentFrame) / 2.0f);
 		// 5 - add collision with plane
+		glm::vec3 velocity = glm::vec3(1.0f, 5.0f, 0.0f);
+		glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
+		velocity = velocity + acceleration * deltaTime;
+		particle1.translate(velocity*deltaTime);
 
 		// 6 - Same as above but for a collection of particles
-		
+
 
 		/*
-		**	RENDER 
+		**	RENDER
 		*/
 
 		// Clear the colorbuffer
@@ -288,12 +290,13 @@ int main()
 		draw(plane);
 		// draw particles
 		draw(particle1);
-		
-				
+
+
 
 		glBindVertexArray(0);
 		// Swap the buffers
 		glfwSwapBuffers(window);
+		lastFrame = currentFrame;
 	}
 
 	glfwTerminate();
