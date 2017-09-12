@@ -264,16 +264,16 @@ int main()
 
 		// 3 - make particle oscillate above the ground plance
 		//particle1.setPos(glm::vec3(0.0f, sinf(currentFrame*M_PI) + 1.0f, 0.0f));
-		//particle1.translate(glm::vec3(0.0f, (sinf(currentFrame*M_PI) - sinf(lastFrame*M_PI)) /* 10.0f*/, 0.0f));
+		particle1.translate(glm::vec3(0.0f, (sinf(currentFrame*M_PI) - sinf(lastFrame*M_PI)) /* 10.0f*/, 0.0f));
 		// 4 - particle animation from initial velocity and acceleration
 		//particle1.translate(glm::vec3(2.0f*deltaTime, (3.0f*currentFrame) + ((-9.8f*currentFrame*currentFrame) / 2.0f), 0.0f));
 		//particle1.setPos(glm::vec3(0.0f, 1.0f, 0.0f) + glm::vec3(2.0f, 8.0f, 0.0f) * currentFrame + (glm::vec3(0.0f, -9.8f, 0.0f)*currentFrame*currentFrame) / 2.0f);
-		// 5 - add collision with plane
-		glm::vec3 velocity = glm::vec3(1.0f, 5.0f, 0.0f);
-		glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
+		//// 5 - add collision with plane
+		//glm::vec3 velocity = glm::vec3(1.0f, 5.0f, 0.0f);
+		//glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
-		velocity = velocity + acceleration * deltaTime;
-		particle1.translate(velocity*deltaTime);
+		//velocity = velocity + acceleration * deltaTime;
+		//particle1.translate(velocity*deltaTime);
 
 		// 6 - Same as above but for a collection of particles
 
