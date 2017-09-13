@@ -227,7 +227,50 @@ int main()
 	/*
 	CREATE THE PARTICLE(S) YOU NEED TO COMPLETE THE TASKS HERE
 	*/
-
+	/*Mesh particle2 = Mesh::Mesh();
+	Mesh particle3 = Mesh::Mesh();
+	Mesh particle4 = Mesh::Mesh();
+	Mesh particle5 = Mesh::Mesh();
+	Mesh particle6 = Mesh::Mesh();
+	Mesh particle7 = Mesh::Mesh();
+	Mesh particle8 = Mesh::Mesh();
+	Mesh particle9 = Mesh::Mesh();
+	Mesh particle10 = Mesh::Mesh();*/
+	glm::vec3 velocity1 = glm::vec3(1.0f, 5.0f, 2.0f);/*
+	glm::vec3 velocity2 = glm::vec3(2.0f, 5.0f, 1.0f);
+	glm::vec3 velocity3 = glm::vec3(glm::sqrt(5.0f), 5.0f, 0.0f);
+	glm::vec3 velocity4 = glm::vec3(2.0f, 5.0f, -1.0f);
+	glm::vec3 velocity5 = glm::vec3(1.0f, 5.0f, -2.0f);
+	glm::vec3 velocity6 = glm::vec3(0.0f, 5.0f, -glm::sqrt(5.0f));
+	glm::vec3 velocity7 = glm::vec3(-1.0f, 5.0f, -2.0f);
+	glm::vec3 velocity8 = glm::vec3(-2.0f, 5.0f, -1.0f);
+	glm::vec3 velocity9 = glm::vec3(-glm::sqrt(5.0f), 5.0f, 0.0f);
+	glm::vec3 velocity10 = glm::vec3(-2.0f, 5.0f, 1.0f);*/
+	std::vector<std::pair<Mesh, glm::vec3>> particleAndVelocity;
+	/*particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle1, velocity1));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle2, velocity2));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle3, velocity3));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle4, velocity4));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle5, velocity5));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle6, velocity6));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle7, velocity7));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle8, velocity8));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle9, velocity9));
+	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle10, velocity10));*/
+	int particleCount = 1000;
+	Mesh loopParticle = Mesh::Mesh();
+	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
+	loopParticle.translate(glm::vec3(0.0f, 2.5f, 0.0f));
+	loopParticle.scale(glm::vec3(.1f, .1f, .1f));
+	loopParticle.rotate((GLfloat)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+	// allocate shader
+	loopParticle.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	for (float i = 0; i < particleCount; ++i) {
+		glm::vec3 loopVelocity = glm::vec3((float)cos(M_PI * 2.0f * i / particleCount), 8.0f, (float)sin(M_PI * 2.0f * i / particleCount));
+		particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(loopParticle, loopVelocity));
+	}
+	
+	glm::vec3 acceleration = glm::vec3(-0.0f, -9.8f, 0.0f);
 
 	GLfloat firstFrame = (GLfloat)glfwGetTime();
 	float acc = 1.1f;
@@ -264,19 +307,26 @@ int main()
 
 		// 3 - make particle oscillate above the ground plance
 		//particle1.setPos(glm::vec3(0.0f, sinf(currentFrame*M_PI) + 1.0f, 0.0f));
-		particle1.translate(glm::vec3(0.0f, (sinf(currentFrame*M_PI) - sinf(lastFrame*M_PI)) /* 10.0f*/, 0.0f));
+		//particle1.translate(glm::vec3(0.0f, (sinf(currentFrame*M_PI) - sinf(lastFrame*M_PI)) /* 10.0f*/, 0.0f));
 		// 4 - particle animation from initial velocity and acceleration
 		//particle1.translate(glm::vec3(2.0f*deltaTime, (3.0f*currentFrame) + ((-9.8f*currentFrame*currentFrame) / 2.0f), 0.0f));
 		//particle1.setPos(glm::vec3(0.0f, 1.0f, 0.0f) + glm::vec3(2.0f, 8.0f, 0.0f) * currentFrame + (glm::vec3(0.0f, -9.8f, 0.0f)*currentFrame*currentFrame) / 2.0f);
 		//// 5 - add collision with plane
-		//glm::vec3 velocity = glm::vec3(1.0f, 5.0f, 0.0f);
-		//glm::vec3 acceleration = glm::vec3(0.0f, -9.8f, 0.0f);
 
-		//velocity = velocity + acceleration * deltaTime;
+		//velocity1 = velocity + acceleration * deltaTime;
+		//if (particle1.getTranslate()[3][1] <= plane.getTranslate()[3][1] + 0.01) {
+		//	velocity.y = abs(velocity.y)  * (velocity.y > 0 ? 1.0f : 0.9f);
+		//}
 		//particle1.translate(velocity*deltaTime);
 
 		// 6 - Same as above but for a collection of particles
-
+		for (std::pair<Mesh, glm::vec3> &pair : particleAndVelocity) {
+			pair.second = pair.second + acceleration * deltaTime;
+			if (pair.first.getTranslate()[3][1] <= plane.getTranslate()[3][1]) {
+				pair.second.y = abs(pair.second.y) * (pair.second.y > 0 ? 1.0f : 0.9f);
+			}
+			pair.first.translate(pair.second * deltaTime);
+		}
 
 		/*
 		**	RENDER
@@ -290,6 +340,10 @@ int main()
 		draw(plane);
 		// draw particles
 		draw(particle1);
+
+		for (std::pair<Mesh, glm::vec3> &pair : particleAndVelocity) {
+			draw(pair.first);
+		}
 
 
 
