@@ -53,11 +53,11 @@ glm::mat4 view = glm::mat4(1.0f);
 glm::mat4 projection = glm::mat4(1.0f);
 
 // time
-GLfloat deltaTime = 0.0f;
+GLfloat deltaTime = 0.0f; // both stay
 GLfloat lastFrame = 0.0f;
 
 // window
-GLFWwindow* window = NULL;
+GLFWwindow* window = NULL; // wide use
 
 // Moves/alters the camera positions based on user input
 void DoMovement()
@@ -227,36 +227,8 @@ int main()
 	/*
 	CREATE THE PARTICLE(S) YOU NEED TO COMPLETE THE TASKS HERE
 	*/
-	/*Mesh particle2 = Mesh::Mesh();
-	Mesh particle3 = Mesh::Mesh();
-	Mesh particle4 = Mesh::Mesh();
-	Mesh particle5 = Mesh::Mesh();
-	Mesh particle6 = Mesh::Mesh();
-	Mesh particle7 = Mesh::Mesh();
-	Mesh particle8 = Mesh::Mesh();
-	Mesh particle9 = Mesh::Mesh();
-	Mesh particle10 = Mesh::Mesh();*/
-	glm::vec3 velocity1 = glm::vec3(1.0f, 5.0f, 2.0f);/*
-	glm::vec3 velocity2 = glm::vec3(2.0f, 5.0f, 1.0f);
-	glm::vec3 velocity3 = glm::vec3(glm::sqrt(5.0f), 5.0f, 0.0f);
-	glm::vec3 velocity4 = glm::vec3(2.0f, 5.0f, -1.0f);
-	glm::vec3 velocity5 = glm::vec3(1.0f, 5.0f, -2.0f);
-	glm::vec3 velocity6 = glm::vec3(0.0f, 5.0f, -glm::sqrt(5.0f));
-	glm::vec3 velocity7 = glm::vec3(-1.0f, 5.0f, -2.0f);
-	glm::vec3 velocity8 = glm::vec3(-2.0f, 5.0f, -1.0f);
-	glm::vec3 velocity9 = glm::vec3(-glm::sqrt(5.0f), 5.0f, 0.0f);
-	glm::vec3 velocity10 = glm::vec3(-2.0f, 5.0f, 1.0f);*/
+	glm::vec3 velocity1 = glm::vec3(1.0f, 5.0f, 2.0f);
 	std::vector<std::pair<Mesh, glm::vec3>> particleAndVelocity;
-	/*particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle1, velocity1));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle2, velocity2));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle3, velocity3));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle4, velocity4));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle5, velocity5));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle6, velocity6));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle7, velocity7));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle8, velocity8));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle9, velocity9));
-	particleAndVelocity.push_back(std::pair<Mesh, glm::vec3>(particle10, velocity10));*/
 	int particleCount = 1000;
 	Mesh loopParticle = Mesh::Mesh();
 	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
