@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Mesh.h"
+#include "Force.h"
 
 class Body
 {
@@ -25,6 +26,8 @@ public:
 	glm::vec3& getAcc() { return m_acc; }
 	glm::vec3& getVel() { return m_vel; }
 	glm::vec3& getPos() { return m_pos; }
+
+	std::vector<Force*> getForces() { return m_forces; }
 
 
 	// physical properties
@@ -57,6 +60,8 @@ public:
 	void rotate(float angle, const glm::vec3 &vect);
 	void scale(const glm::vec3 &vect);
 
+	void addForce(Force *force) { m_forces.push_back(force); }
+
 private:
 	Mesh m_mesh; // mesh used to represent the body
 
@@ -66,5 +71,7 @@ private:
 	glm::vec3 m_acc; // acceleration
 	glm::vec3 m_vel; // velocity
 	glm::vec3 m_pos; // position
+
+	std::vector<Force*> m_forces;
 };
 
