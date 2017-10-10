@@ -27,12 +27,12 @@ public:
 	glm::vec3& getVel() { return m_vel; }
 	glm::vec3& getPos() { return m_pos; }
 
-	std::vector<Force*> getForces() { return m_forces; }
-
 
 	// physical properties
 	float getMass() const { return m_mass; }
 	float getCor() { return m_cor; }
+
+	glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float deltaTime);
 
 	/*
 	** SET METHODS
@@ -59,6 +59,8 @@ public:
 	void translate(const glm::vec3 &vect);
 	void rotate(float angle, const glm::vec3 &vect);
 	void scale(const glm::vec3 &vect);
+
+	std::vector<Force*> getForces() { return m_forces; }
 
 	void addForce(Force *force) { m_forces.push_back(force); }
 
