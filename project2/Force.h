@@ -15,7 +15,7 @@ public:
 /*
 Gravity Class
 */
-class Gravity :public Force {
+class Gravity : public Force {
 public:
 	// Constructors
 	Gravity() {}
@@ -31,11 +31,39 @@ private:
 /*
 Drag Class
 */
-class Drag :public Force {
+class Drag : public Force {
 public:
-	Drag(){}
+	Drag() {}
 	// Physics
 	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
 private:
+};
 
+class Hooke : public Force {
+public:
+	Hooke() {}
+	Hooke(Body *root, Body *end, float kstiff, float kdamp, float rest) {
+		m_root = root;
+		m_end = end;
+		m_kstiff = kstiff;
+		m_kdamp = kdamp;
+		m_rest = rest;
+	}
+
+	Body* getRoot() { return m_root; }
+	Body* getEnd() { return m_end; }
+	
+	float getRest() { return m_rest; }
+	float getDamp() { return m_kdamp; }
+	float getSpring() { return m_kstiff; }
+
+	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+
+private:
+	float m_kstiff;
+	float m_kdamp;
+	float m_rest;
+
+	Body *m_root;
+	Body *m_end;
 };

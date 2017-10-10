@@ -422,10 +422,80 @@ void WindDemo() {
 	}
 }
 
+void ChainDemo() {
+
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
+
+	Mesh plane = CreatePlane(5.0f);
+
+	glm::vec3 cubeSize;
+	glm::vec3 cubeBL;
+	CreateCubeVectors(5.0f, cubeSize, cubeBL);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
+	Drag drag = Drag();
+
+	Particle particle = Particle::Particle();
+	particle.setPos(glm::vec3(-1.0f, 3.0f, -1.0f));
+	particle.setVel(glm::vec3(0.0f));
+	particle.setMass(0.01f);
+	particle.addForce(&grav);
+	particle.addForce(&drag);
+	particle.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+
+	int particleCount = 100;
+	std::vector<Particle> particles;
+	CreateParticleVector(particles, particle, particleCount, 5.0f);
+
+	double totalTime = 0.0;
+	double fixedDeltaTime = 0.005;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = currentFrameTime - lastFrameTime;
+
+		accumulator += frameDeltaTime;
+
+		app.doMovement((GLfloat)frameDeltaTime);
+
+		while (accumulator >= fixedDeltaTime) {
+
+			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
+				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
+				CollisionDetection(particles[pIndex], cubeBL, cubeSize);
+			}
+
+			accumulator -= fixedDeltaTime;
+			totalTime += fixedDeltaTime;
+		}
+
+		app.clear();
+
+		app.draw(plane);
+
+		for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
+			app.draw(particles[pIndex].getMesh());
+		}
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+		std::cout << (1.0f / frameDeltaTime < 60.0f ? 1.0f / frameDeltaTime : 0.0f) << std::endl;
+	}
+}
+
 // main function
 int main()
 {
-	int demo = 1;
+	int demo = 3;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -435,6 +505,9 @@ int main()
 		break;
 	case 2:
 		WindDemo();
+		break;
+	case 3:
+		ChainDemo();
 		break;
 	default:
 		BoxDemo();

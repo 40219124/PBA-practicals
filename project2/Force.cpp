@@ -11,11 +11,18 @@ glm::vec3 Force::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel) {
 Gravity 
 */
 glm::vec3 Gravity::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel) {
-	// complete
+	return m_gravity;
 }
 /*
 Drag
 */
 glm::vec3 Drag::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel) {
-	// complete
+	return (-glm::length2(vel) / 100.0f) * vel;
+}
+/*
+Hooke
+*/
+glm::vec3 Hooke::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel) {
+	glm::vec3 displacement = 
+	return 
 }
