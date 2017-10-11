@@ -10,7 +10,7 @@ class Force
 public:
 	Force() {}
 	~Force() {}
-	virtual glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+	virtual glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
 };
 /*
 Gravity Class
@@ -24,7 +24,7 @@ public:
 	glm::vec3 getGravity() const { return m_gravity; }
 	void setGravity(glm::vec3 gravity) { m_gravity = gravity; }
 	// Physics
-	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
 private:
 	glm::vec3 m_gravity = glm::vec3(0.0f, -9.8f, 0.0f);
 };
@@ -35,7 +35,7 @@ class Drag : public Force {
 public:
 	Drag() {}
 	// Physics
-	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
 private:
 };
 
@@ -55,9 +55,9 @@ public:
 	
 	float getRest() { return m_rest; }
 	float getDamp() { return m_kdamp; }
-	float getSpring() { return m_kstiff; }
+	float getStiff() { return m_kstiff; }
 
-	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
 
 private:
 	float m_kstiff;
