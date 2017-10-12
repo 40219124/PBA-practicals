@@ -674,14 +674,14 @@ void ClothDemo() {
 	float particleMass = 0.1f;
 	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
 
-	float spring = 14.5f;
-	float damp = 8.0f;
-	float rest = 0.5f;
-
 	const int sideLength = 10;
 	Particle cloth[sideLength][sideLength];
 	glm::vec3 clothStart = glm::vec3(-2.0, 3.0f, -2.0f);
 	glm::vec3 clothDim = glm::vec3(4.0f, 0.0f, 4.0f);
+
+	float spring = 12.0f;
+	float damp = 8.0f;
+	float rest = clothDim.x / ((float)sideLength * 1.25f);
 
 	for (int x = 0; x < sideLength; ++x) {
 		for (int z = 0; z < sideLength; ++z) {
@@ -698,7 +698,6 @@ void ClothDemo() {
 				cloth[x - 1][z].addForce(new Hooke(&cloth[x - 1][z], &cloth[x][z], spring, damp, rest));
 				cloth[x][z].addForce(new Hooke(&cloth[x][z], &cloth[x - 1][z], spring, damp, rest));
 			}
-
 		}
 	}
 
@@ -738,22 +737,20 @@ void ClothDemo() {
 				for (int z = 0; z < sideLength; ++z) {
 					cloth[x][z].setVel(cloth[x][z].getVel() + cloth[x][z].getAcc() * fixedDeltaTime);
 					cloth[x][z].translate(cloth[x][z].getVel() * fixedDeltaTime);
+					CollisionDetection(cloth[x][z], cubeBL, cubeSize);
 				}
 			}
-			//CollisionDetection(particles[pIndex], cubeBL, cubeSize);
-
 
 			accumulator -= fixedDeltaTime;
 			totalTime += fixedDeltaTime;
 		}
 
 		app.clear();
-		//app.draw(plane);
+		app.draw(plane);
 
 		for (int x = 0; x < sideLength; ++x) {
 			for (int z = 0; z < sideLength; ++z) {
 				app.draw(cloth[x][z].getMesh());
-
 			}
 		}
 
