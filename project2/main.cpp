@@ -659,10 +659,115 @@ void U2Demo() {
 	}
 }
 
+void ClothDemo() {
+
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
+
+	Mesh plane = CreatePlane(5.0f);
+
+	glm::vec3 cubeSize;
+	glm::vec3 cubeBL;
+	CreateCubeVectors(5.0f, cubeSize, cubeBL);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	float particleMass = 0.1f;
+	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
+
+	float spring = 14.5f;
+	float damp = 8.0f;
+	float rest = 0.5f;
+
+	const int sideLength = 10;
+	Particle cloth[sideLength][sideLength];
+	glm::vec3 clothStart = glm::vec3(-2.0, 3.0f, -2.0f);
+	glm::vec3 clothDim = glm::vec3(4.0f, 0.0f, 4.0f);
+
+	for (int x = 0; x < sideLength; ++x) {
+		for (int z = 0; z < sideLength; ++z) {
+			cloth[x][z] = Particle::Particle();
+			cloth[x][z].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+			cloth[x][z].setPos(glm::vec3(clothStart.x + clothDim.x * x / (sideLength - 1), clothStart.y, clothStart.z + clothDim.z * z / (sideLength - 1)));
+			cloth[x][z].setMass(particleMass);
+			cloth[x][z].addForce(&grav);
+			if (z > 0) {
+				cloth[x][z - 1].addForce(new Hooke(&cloth[x][z - 1], &cloth[x][z], spring, damp, rest));
+				cloth[x][z].addForce(new Hooke(&cloth[x][z], &cloth[x][z - 1], spring, damp, rest));
+			}
+			if (x > 0) {
+				cloth[x - 1][z].addForce(new Hooke(&cloth[x - 1][z], &cloth[x][z], spring, damp, rest));
+				cloth[x][z].addForce(new Hooke(&cloth[x][z], &cloth[x - 1][z], spring, damp, rest));
+			}
+
+		}
+	}
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 1000.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		accumulator += frameDeltaTime;
+
+		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+
+		while (accumulator >= fixedDeltaTime) {
+
+			for (int x = 0; x < sideLength; ++x) {
+				for (int z = 0; z < sideLength; ++z) {
+					if (x == 0 && (z == 0 || z == sideLength - 1)) {
+						cloth[x][z].setAcc(glm::vec3(0.0f));
+					}
+					else if (x == sideLength - 1 && (z == 0 || z == sideLength - 1)) {
+						cloth[x][z].setAcc(glm::vec3(0.0f));
+					}
+					else {
+						cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
+					}
+				}
+			}
+
+			for (int x = 0; x < sideLength; ++x) {
+				for (int z = 0; z < sideLength; ++z) {
+					cloth[x][z].setVel(cloth[x][z].getVel() + cloth[x][z].getAcc() * fixedDeltaTime);
+					cloth[x][z].translate(cloth[x][z].getVel() * fixedDeltaTime);
+				}
+			}
+			//CollisionDetection(particles[pIndex], cubeBL, cubeSize);
+
+
+			accumulator -= fixedDeltaTime;
+			totalTime += fixedDeltaTime;
+		}
+
+		app.clear();
+		//app.draw(plane);
+
+		for (int x = 0; x < sideLength; ++x) {
+			for (int z = 0; z < sideLength; ++z) {
+				app.draw(cloth[x][z].getMesh());
+
+			}
+		}
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+		std::cout << (1.0f / frameDeltaTime < 60.0f ? 1.0f / frameDeltaTime : 0.0f) << std::endl;
+	}
+}
+
 // main function
 int main()
 {
-	int demo = 5;
+	int demo = 6;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -681,6 +786,9 @@ int main()
 		break;
 	case 5:
 		U2Demo();
+		break;
+	case 6:
+		ClothDemo();
 		break;
 	default:
 		BoxDemo();
