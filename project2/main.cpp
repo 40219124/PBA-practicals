@@ -437,8 +437,8 @@ void ChainDemo() {
 	float particleMass = 0.1f;
 	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
 
-	float spring = 6.5f;
-	float damp = 8.50f;
+	float spring = 9.5f;
+	float damp = 9.0f;
 	float rest = 0.5f;
 
 	int particleCount = 5;
@@ -451,7 +451,6 @@ void ChainDemo() {
 		particles[i].setPos(glm::vec3(0.0f, 4.0f + i / particleCount, 0.0f));
 		particles[i].setMass(particleMass);
 		particles[i].addForce(&grav);
-		particles[i].addForce(new Drag());
 		if (i > 0) {
 			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
 			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
@@ -461,7 +460,7 @@ void ChainDemo() {
 
 	double timeSpeed = 1.0;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 300.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 1000.0;
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
@@ -481,6 +480,162 @@ void ChainDemo() {
 				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
 			}
 			for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
+				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
+				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
+			}
+
+			accumulator -= fixedDeltaTime;
+			totalTime += fixedDeltaTime;
+		}
+
+		app.clear();
+
+		for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
+			app.draw(particles[pIndex].getMesh());
+		}
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+		std::cout << (1.0f / frameDeltaTime < 60.0f ? 1.0f / frameDeltaTime : 0.0f) << std::endl;
+	}
+}
+
+void UDemo() {
+
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
+
+	Mesh plane = CreatePlane(5.0f);
+
+	glm::vec3 cubeSize;
+	glm::vec3 cubeBL;
+	CreateCubeVectors(5.0f, cubeSize, cubeBL);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	float particleMass = 0.1f;
+	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
+
+	float spring = 14.5f;
+	float damp = 8.0f;
+	float rest = 0.5f;
+
+	int particleCount = 10;
+	std::vector<Particle> particles(particleCount);
+
+	for (int i = 0; i < particleCount; ++i) {
+		particles[i] = (Particle::Particle());
+		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		particles[i].setVel(glm::vec3(0.0f));
+		particles[i].setPos(glm::vec3(-2.0f + 4.0f * i / (particleCount - 1), 4.0f, 0.0f));
+		particles[i].setMass(particleMass);
+		particles[i].addForce(&grav);
+		if (i > 0) {
+			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
+			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
+		}
+	}
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 1000.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		accumulator += frameDeltaTime;
+
+		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+
+		while (accumulator >= fixedDeltaTime) {
+
+			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+			}
+			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
+				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
+				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
+			}
+
+			accumulator -= fixedDeltaTime;
+			totalTime += fixedDeltaTime;
+		}
+
+		app.clear();
+
+		for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
+			app.draw(particles[pIndex].getMesh());
+		}
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+		std::cout << (1.0f / frameDeltaTime < 60.0f ? 1.0f / frameDeltaTime : 0.0f) << std::endl;
+	}
+}
+
+void U2Demo() {
+
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
+
+	Mesh plane = CreatePlane(5.0f);
+
+	glm::vec3 cubeSize;
+	glm::vec3 cubeBL;
+	CreateCubeVectors(5.0f, cubeSize, cubeBL);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	float particleMass = 0.1f;
+	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
+
+	float spring = 14.5f;
+	float damp = 8.0f;
+	float rest = 0.5f;
+
+	int particleCount = 10;
+	std::vector<Particle> particles(particleCount);
+
+	for (int i = 0; i < particleCount; ++i) {
+		particles[i] = (Particle::Particle());
+		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		particles[i].setVel(glm::vec3(0.0f));
+		particles[i].setPos(glm::vec3(-2.0f + 4.0f * i / (particleCount - 1), 2.0f, 0.0f));
+		particles[i].setMass(particleMass);
+		particles[i].addForce(&grav);
+		if (i > 0) {
+			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
+			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
+		}
+	}
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 1000.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		accumulator += frameDeltaTime;
+
+		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+
+		while (accumulator >= fixedDeltaTime) {
+
+			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+			}
+			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
 				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
 				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
 				CollisionDetection(particles[pIndex], cubeBL, cubeSize);
@@ -507,7 +662,7 @@ void ChainDemo() {
 // main function
 int main()
 {
-	int demo = 3;
+	int demo = 5;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -520,6 +675,12 @@ int main()
 		break;
 	case 3:
 		ChainDemo();
+		break;
+	case 4:
+		UDemo();
+		break;
+	case 5:
+		U2Demo();
 		break;
 	default:
 		BoxDemo();
