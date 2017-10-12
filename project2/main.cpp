@@ -434,75 +434,37 @@ void ChainDemo() {
 	CreateCubeVectors(5.0f, cubeSize, cubeBL);
 
 	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
-	float particleMass = 0.01f;
+	float particleMass = 0.1f;
 	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
-	bool lotsOfParticles = false;
 
-	Particle particle = Particle::Particle();
-	particle.setPos(glm::vec3(0.0f, 3.0f, 0.0f));
-	particle.setAcc(glm::vec3(0.0f));
-	particle.setVel(glm::vec3(0.0f));
-	particle.setMass(particleMass);
-	particle.addForce(&grav);
-	particle.addForce(new Drag());
-	particle.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
-
-	float spring = 15.1f;
-	float damp = 1.0f;
+	float spring = 6.5f;
+	float damp = 8.50f;
 	float rest = 0.5f;
 
-	Particle particle2 = Particle::Particle();
-	Particle particle3 = Particle::Particle();
-	if (lotsOfParticles) {
-		particle2.setPos(glm::vec3(0.0f, 2.0f, 0.0f));
-		particle2.setVel(glm::vec3(0.0f));
-		particle2.setMass(particleMass);
-		particle2.addForce(&grav);
-		particle2.addForce(new Drag());
-		particle2.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
-
-		particle3.setPos(glm::vec3(1.0f, 2.0f, 0.0f));
-		particle3.setVel(glm::vec3(0.0f));
-		particle3.setMass(particleMass);
-		particle3.addForce(&grav);
-		particle3.addForce(new Drag());
-		particle3.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
-
-		//particle.addForce(new Hooke(&particle, &particle2, spring, damp, rest));
-		particle2.addForce(new Hooke(&particle2, &particle, spring, damp, rest));
-		particle2.addForce(new Hooke(&particle2, &particle3, spring, damp, rest));
-		particle3.addForce(new Hooke(&particle3, &particle2, spring, damp, rest));
-	}
-
-	//Hooke
-
-	int particleCount = 100;
+	int particleCount = 5;
 	std::vector<Particle> particles(particleCount);
-	if (!lotsOfParticles) {
-		for (int i = 0; i < particleCount; ++i) {
-			particles[i] = (Particle::Particle());
-			particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
-			particles[i].setVel(glm::vec3((float)cos(M_PI * 2.0f * i / particleCount) * 5.0f, 1.0f, (float)sin(M_PI * 2.0f * i / particleCount) * 5.0f));
-			particles[i].setPos(glm::vec3(0.0f, 4.0f + i / particleCount, 0.0f));
-			particles[i].setMass(particleMass);
-			particles[i].addForce(&grav);
-			particles[i].addForce(new Drag());
-			if (i > 0) {
-				particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
-				particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
-			}
-		}
-		particles[0].setVel(glm::vec3(0.0f));
-	}
 
+	for (int i = 0; i < particleCount; ++i) {
+		particles[i] = (Particle::Particle());
+		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		particles[i].setVel(glm::vec3((float)cos(M_PI * 2.0f * i / particleCount) * 5.0f, 1.0f, (float)sin(M_PI * 2.0f * i / particleCount) * 5.0f));
+		particles[i].setPos(glm::vec3(0.0f, 4.0f + i / particleCount, 0.0f));
+		particles[i].setMass(particleMass);
+		particles[i].addForce(&grav);
+		particles[i].addForce(new Drag());
+		if (i > 0) {
+			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
+			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
+		}
+	}
+	particles[0].setVel(glm::vec3(0.0f));
 
 	double timeSpeed = 1.0;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 200.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 300.0;
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
-
 
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
@@ -511,34 +473,19 @@ void ChainDemo() {
 
 		accumulator += frameDeltaTime;
 
-		app.doMovement((GLfloat)frameDeltaTime);
+		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
 
 		while (accumulator >= fixedDeltaTime) {
 
-			if (lotsOfParticles) {
-				particle.setAcc(glm::vec3(0.0f));
-				particle.setVel(glm::vec3(0.0f));
-
-				particle2.setAcc(particle2.applyForces(particle2.getPos(), particle2.getVel(), totalTime, fixedDeltaTime));
-				particle2.setVel(particle2.getVel() + particle2.getAcc() * fixedDeltaTime);
-				particle2.translate(particle2.getVel() * fixedDeltaTime);
-				CollisionDetection(particle2, cubeBL, cubeSize);
-
-				particle3.setAcc(particle3.applyForces(particle3.getPos(), particle3.getVel(), totalTime, fixedDeltaTime));
-				particle3.setVel(particle3.getVel() + particle3.getAcc() * fixedDeltaTime);
-				particle3.translate(particle3.getVel() * fixedDeltaTime);
-				CollisionDetection(particle3, cubeBL, cubeSize);
+			for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+			}
+			for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
+				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
+				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
+				CollisionDetection(particles[pIndex], cubeBL, cubeSize);
 			}
 
-
-			if (!lotsOfParticles) {
-				for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
-					particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
-					particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
-					particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
-					CollisionDetection(particles[pIndex], cubeBL, cubeSize);
-				}
-			}
 			accumulator -= fixedDeltaTime;
 			totalTime += fixedDeltaTime;
 		}
@@ -546,16 +493,8 @@ void ChainDemo() {
 		app.clear();
 
 		app.draw(plane);
-
-		if (lotsOfParticles) {
-			app.draw(particle.getMesh());
-			app.draw(particle2.getMesh());
-			app.draw(particle3.getMesh());
-		}
-		if (!lotsOfParticles) {
-			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
-				app.draw(particles[pIndex].getMesh());
-			}
+		for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
+			app.draw(particles[pIndex].getMesh());
 		}
 
 		app.display();
