@@ -761,10 +761,155 @@ void ClothDemo() {
 	}
 }
 
+void FlagDemo() {
+
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
+
+	Mesh plane = CreatePlane(5.0f);
+
+	glm::vec3 cubeSize;
+	glm::vec3 cubeBL;
+	CreateCubeVectors(5.0f, cubeSize, cubeBL);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	float particleMass = 0.1f;
+	Gravity grav = Gravity(aGravity * particleMass);
+
+	glm::vec3 windSpeed = glm::vec3(0.0f, 0.0f, -3.0f);
+	glm::vec3 windSource = glm::vec3(0.0f, cos(2.0f * M_PI * 0.0f), sin(2.0f * M_PI * 0.0f));
+	glm::vec3 windEnd = -windSource;
+	Particle wiSoP = Particle::Particle();
+	wiSoP.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	Particle wiSoP2 = Particle::Particle();
+	wiSoP2.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	Particle wiEnP = Particle::Particle();
+	wiEnP.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+
+	const int sideLength = 10;
+	Particle cloth[sideLength][sideLength];
+	glm::vec3 clothStart = glm::vec3(-2.0, 3.0f, -2.0f);
+	glm::vec3 clothDim = glm::vec3(4.0f, 0.0f, 4.0f);
+
+	float spring = 600.0f;
+	float damp = 1.0f;
+	float rest = clothDim.x / ((float)sideLength);// *1.25f);
+
+	for (int x = 0; x < sideLength; ++x) {
+		for (int z = 0; z < sideLength; ++z) {
+			cloth[x][z] = Particle::Particle();
+			cloth[x][z].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+			cloth[x][z].setPos(glm::vec3(clothStart.x + clothDim.x * x / (sideLength - 1), clothStart.y, clothStart.z + clothDim.z * z / (sideLength - 1)));
+			cloth[x][z].setMass(particleMass);
+			cloth[x][z].addForce(&grav);
+			if (z > 0) {
+				Hooke *hooke = new Hooke(&cloth[x][z - 1], &cloth[x][z], spring, damp, rest);
+				cloth[x][z - 1].addForce(hooke);
+				cloth[x][z].addForce(hooke);
+			}
+			if (x > 0) {
+				Hooke *hooke = new Hooke(&cloth[x - 1][z], &cloth[x][z], spring, damp, rest);
+				cloth[x - 1][z].addForce(hooke);
+				cloth[x][z].addForce(hooke);
+			}
+			if (x > 0) {
+				Wind *wind = new Wind(&cloth[x][z], &cloth[x - 1][z], &cloth[x - 1][z + 1], &windSpeed);
+				cloth[x][z].addForce(wind);
+				cloth[x - 1][z].addForce(wind);
+				cloth[x - 1][z + 1].addForce(wind);
+				if (z > 0) {
+					wind = new Wind(&cloth[x][z], &cloth[x][z - 1], &cloth[x - 1][z], &windSpeed);
+					cloth[x][z].addForce(wind);
+					cloth[x][z - 1].addForce(wind);
+					cloth[x - 1][z].addForce(wind);
+				}
+			}
+		}
+	}
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	int frameCount = 1;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		accumulator += frameDeltaTime;
+
+		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+
+		while (accumulator >= fixedDeltaTime) {
+
+			windSource = glm::vec3(0.0f, cos(M_PI * totalTime / 10.0f), sin(M_PI * totalTime / 10.0f));
+			windEnd = -windSource;
+			windSpeed = (windEnd - windSource) * 4.0f;
+			wiSoP.setPos(windSource);
+			wiSoP.setPos(1, wiSoP.getPos().y + 4.0f);
+			wiSoP2.setPos(windSource * 0.95f);
+			wiSoP2.setPos(1, wiSoP2.getPos().y + 4.0f);
+			wiEnP.setPos(windEnd);
+			wiEnP.setPos(1, wiEnP.getPos().y + 4.0f);
+
+			for (int x = 0; x < sideLength; ++x) {
+				for (int z = 0; z < sideLength; ++z) {
+					cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
+					if (z == sideLength - 1 && (x == 0 || x == sideLength - 1)) {
+						cloth[x][z].setAcc(glm::vec3(0.0f));
+					}
+				}
+			}
+
+			for (int x = 0; x < sideLength; ++x) {
+				for (int z = 0; z < sideLength; ++z) {
+					cloth[x][z].setVel(cloth[x][z].getVel() + cloth[x][z].getAcc() * fixedDeltaTime);
+					cloth[x][z].translate(cloth[x][z].getVel() * fixedDeltaTime);
+					int i = 1;
+					if (cloth[x][z].getPos()[i] <= cubeBL[i]) {
+						glm::vec3 vel = cloth[x][z].getVel() * 0.85f;
+						vel[i] = abs(vel[i]) * 0.9f;
+						cloth[x][z].setVel(vel);
+						glm::vec3 pos = cloth[x][z].getPos();
+						pos[i] = cubeBL[i] + (cubeBL[i] - pos[i]);
+						cloth[x][z].setPos(pos);
+					}
+				}
+			}
+
+			accumulator -= fixedDeltaTime;
+			totalTime += fixedDeltaTime;
+		}
+
+		app.clear();
+		app.draw(plane);
+		app.draw(wiSoP.getMesh());
+		app.draw(wiSoP2.getMesh());
+		app.draw(wiEnP.getMesh());
+
+		for (int x = 0; x < sideLength; ++x) {
+			for (int z = 0; z < sideLength; ++z) {
+				app.draw(cloth[x][z].getMesh());
+			}
+		}
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+		std::cout << (1.0f / ((currentFrameTime - startTime) / frameCount)) << std::endl;
+		frameCount++;
+	}
+}
+
 // main function
 int main()
 {
-	int demo = 6;
+	int demo = 7;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -786,6 +931,9 @@ int main()
 		break;
 	case 6:
 		ClothDemo();
+		break;
+	case 7:
+		FlagDemo();
 		break;
 	default:
 		BoxDemo();

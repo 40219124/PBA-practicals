@@ -60,6 +60,13 @@ public:
 	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
 
 private:
+	void Cycle() {
+		m_cycle = (m_cycle + 1) % 2;
+	}
+
+	int m_cycle = 0;
+	glm::vec3 m_result = glm::vec3(0.0f);
+
 	float m_kstiff;
 	float m_kdamp;
 	float m_rest;
