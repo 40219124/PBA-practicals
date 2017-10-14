@@ -680,7 +680,7 @@ void ClothDemo() {
 	glm::vec3 clothDim = glm::vec3(4.0f, 0.0f, 4.0f);
 
 	float spring = 12.0f;
-	float damp = 8.0f;
+	float damp = 2.0f;
 	float rest = clothDim.x / ((float)sideLength * 1.25f);
 
 	for (int x = 0; x < sideLength; ++x) {
@@ -703,7 +703,7 @@ void ClothDemo() {
 
 	double timeSpeed = 1.0;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 1000.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 200.0;
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;

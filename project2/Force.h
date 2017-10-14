@@ -52,7 +52,7 @@ public:
 
 	Body* getRoot() { return m_root; }
 	Body* getEnd() { return m_end; }
-	
+
 	float getRest() { return m_rest; }
 	float getDamp() { return m_kdamp; }
 	float getStiff() { return m_kstiff; }
@@ -66,4 +66,31 @@ private:
 
 	Body *m_root;
 	Body *m_end;
+};
+
+class Wind : public Force {
+public:
+	Wind() {}
+	Wind(Body *p1, Body *p2, Body *p3, glm::vec3 *airSpeed) {
+		m_p1 = p1;
+		m_p2 = p2;
+		m_p3 = p3;
+		m_airSpeed = airSpeed;
+	}
+
+	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
+
+private:
+	void Cycle() {
+		m_cycle = (m_cycle + 1) % 3;
+	}
+
+	int m_cycle = 0;
+	glm::vec3 m_result = glm::vec3(0.0f);
+
+	glm::vec3 *m_airSpeed;
+
+	Body *m_p1;
+	Body *m_p2;
+	Body *m_p3;
 };
