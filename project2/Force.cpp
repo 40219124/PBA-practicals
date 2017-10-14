@@ -54,6 +54,7 @@ glm::vec3 Wind::apply(const glm::vec3 &pos, const glm::vec3 &vel) {
 				float area = (length(s1) * length(s2)) / 2.0f;
 				float aEff = area * (glm::dot(dV, norm)) / length(dV);
 				result = length(dV) * length(dV) * aEff * (-norm);
+				result = result / 3.0f;
 			}
 		}
 		m_result = result;
