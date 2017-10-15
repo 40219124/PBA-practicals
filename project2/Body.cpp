@@ -29,5 +29,9 @@ glm::vec3 Body::applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float
 	for (auto &f : m_forces) {
 		fAccumulator += f->apply(pos, vel);
 	}
-	return fAccumulator / getMass();
+	glm::vec3 acc = fAccumulator / getMass();
+	if (glm::length(acc) > 1000.0f) {
+		acc = 1000.0f * acc / length(acc);
+	}
+	return acc;
 }
