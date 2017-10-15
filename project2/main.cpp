@@ -781,14 +781,12 @@ void FlagDemo() {
 	glm::vec3 windEnd = -windSource;
 	Particle wiSoP = Particle::Particle();
 	wiSoP.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
-	Particle wiSoP2 = Particle::Particle();
-	wiSoP2.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
 	Particle wiEnP = Particle::Particle();
-	wiEnP.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	wiEnP.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag"));
 
 	const int sideLength = 10;
 	Particle cloth[sideLength][sideLength];
-	glm::vec3 clothStart = glm::vec3(-2.0, 3.0f, -2.0f);
+	glm::vec3 clothStart = glm::vec3(-2.0, 3.0f, -4.0f);
 	glm::vec3 clothDim = glm::vec3(4.0f, 0.0f, 4.0f);
 
 	float spring = 600.0f;
@@ -798,7 +796,7 @@ void FlagDemo() {
 	for (int x = 0; x < sideLength; ++x) {
 		for (int z = 0; z < sideLength; ++z) {
 			cloth[x][z] = Particle::Particle();
-			cloth[x][z].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+			cloth[x][z].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 			cloth[x][z].setPos(glm::vec3(clothStart.x + clothDim.x * x / (sideLength - 1), clothStart.y, clothStart.z + clothDim.z * z / (sideLength - 1)));
 			cloth[x][z].setMass(particleMass);
 			cloth[x][z].addForce(&grav);
@@ -829,7 +827,7 @@ void FlagDemo() {
 
 	double timeSpeed = 1.0;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 200.0;
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
@@ -851,11 +849,11 @@ void FlagDemo() {
 			windEnd = -windSource;
 			windSpeed = (windEnd - windSource) * 4.0f;
 			wiSoP.setPos(windSource);
-			wiSoP.setPos(1, wiSoP.getPos().y + 4.0f);
-			wiSoP2.setPos(windSource * 0.95f);
-			wiSoP2.setPos(1, wiSoP2.getPos().y + 4.0f);
+			wiSoP.setPos(0, clothStart.x);
+			wiSoP.setPos(1, wiSoP.getPos().y + clothStart.y);
 			wiEnP.setPos(windEnd);
-			wiEnP.setPos(1, wiEnP.getPos().y + 4.0f);
+			wiEnP.setPos(0, clothStart.x);
+			wiEnP.setPos(1, wiEnP.getPos().y + clothStart.y);
 
 			for (int x = 0; x < sideLength; ++x) {
 				for (int z = 0; z < sideLength; ++z) {
@@ -889,7 +887,6 @@ void FlagDemo() {
 		app.clear();
 		app.draw(plane);
 		app.draw(wiSoP.getMesh());
-		app.draw(wiSoP2.getMesh());
 		app.draw(wiEnP.getMesh());
 
 		for (int x = 0; x < sideLength; ++x) {
