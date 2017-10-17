@@ -438,7 +438,7 @@ void ChainDemo() {
 	Gravity grav = Gravity(glm::vec3(0.0f, -9.8f, 0.0f) * particleMass);
 
 	float spring = 9.5f;
-	float damp = 9.0f;
+	float damp = 7.0f;
 	float rest = 0.5f;
 
 	int particleCount = 5;
@@ -446,14 +446,15 @@ void ChainDemo() {
 
 	for (int i = 0; i < particleCount; ++i) {
 		particles[i] = (Particle::Particle());
-		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 		particles[i].setVel(glm::vec3((float)cos(M_PI * 2.0f * i / particleCount) * 5.0f, 1.0f, (float)sin(M_PI * 2.0f * i / particleCount) * 5.0f));
 		particles[i].setPos(glm::vec3(0.0f, 4.0f + i / particleCount, 0.0f));
 		particles[i].setMass(particleMass);
 		particles[i].addForce(&grav);
 		if (i > 0) {
-			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
-			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
+			Hooke *hooke = new Hooke(&particles[i - 1], &particles[i], spring, damp, rest);
+			particles[i - 1].addForce(hooke);
+			particles[i].addForce(hooke);
 		}
 	}
 	particles[0].setVel(glm::vec3(0.0f));
@@ -476,9 +477,10 @@ void ChainDemo() {
 
 		while (accumulator >= fixedDeltaTime) {
 
-			for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
+			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
 				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
 			}
+			particles[0].setAcc(glm::vec3(0.0f));
 			for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
 				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
 				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
@@ -525,14 +527,15 @@ void UDemo() {
 
 	for (int i = 0; i < particleCount; ++i) {
 		particles[i] = (Particle::Particle());
-		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 		particles[i].setVel(glm::vec3(0.0f));
 		particles[i].setPos(glm::vec3(-2.0f + 4.0f * i / (particleCount - 1), 4.0f, 0.0f));
 		particles[i].setMass(particleMass);
 		particles[i].addForce(&grav);
 		if (i > 0) {
-			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
-			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
+			Hooke *hooke = new Hooke(&particles[i - 1], &particles[i], spring, damp, rest);
+			particles[i - 1].addForce(hooke);
+			particles[i].addForce(hooke);
 		}
 	}
 
@@ -554,9 +557,11 @@ void UDemo() {
 
 		while (accumulator >= fixedDeltaTime) {
 
-			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
+			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
 				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
 			}
+			particles[0].setAcc(glm::vec3(0.0f));
+			particles[particleCount - 1].setAcc(glm::vec3(0.0f));
 			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
 				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
 				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
@@ -603,14 +608,15 @@ void U2Demo() {
 
 	for (int i = 0; i < particleCount; ++i) {
 		particles[i] = (Particle::Particle());
-		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		particles[i].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 		particles[i].setVel(glm::vec3(0.0f));
 		particles[i].setPos(glm::vec3(-2.0f + 4.0f * i / (particleCount - 1), 2.0f, 0.0f));
 		particles[i].setMass(particleMass);
 		particles[i].addForce(&grav);
 		if (i > 0) {
-			particles[i - 1].addForce(new Hooke(&particles[i - 1], &particles[i], spring, damp, rest));
-			particles[i].addForce(new Hooke(&particles[i], &particles[i - 1], spring, damp, rest));
+			Hooke *hooke = new Hooke(&particles[i - 1], &particles[i], spring, damp, rest);
+			particles[i - 1].addForce(hooke);
+			particles[i].addForce(hooke);
 		}
 	}
 
@@ -632,9 +638,11 @@ void U2Demo() {
 
 		while (accumulator >= fixedDeltaTime) {
 
-			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
+			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
 				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
 			}
+			particles[0].setAcc(glm::vec3(0.0f));
+			particles[particleCount - 1].setAcc(glm::vec3(0.0f));
 			for (int pIndex = 1; pIndex < particleCount - 1; ++pIndex) {
 				particles[pIndex].setVel(particles[pIndex].getVel() + particles[pIndex].getAcc() * fixedDeltaTime);
 				particles[pIndex].translate(particles[pIndex].getVel() * fixedDeltaTime);
@@ -686,17 +694,19 @@ void ClothDemo() {
 	for (int x = 0; x < sideLength; ++x) {
 		for (int z = 0; z < sideLength; ++z) {
 			cloth[x][z] = Particle::Particle();
-			cloth[x][z].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+			cloth[x][z].getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 			cloth[x][z].setPos(glm::vec3(clothStart.x + clothDim.x * x / (sideLength - 1), clothStart.y, clothStart.z + clothDim.z * z / (sideLength - 1)));
 			cloth[x][z].setMass(particleMass);
 			cloth[x][z].addForce(&grav);
 			if (z > 0) {
-				cloth[x][z - 1].addForce(new Hooke(&cloth[x][z - 1], &cloth[x][z], spring, damp, rest));
-				cloth[x][z].addForce(new Hooke(&cloth[x][z], &cloth[x][z - 1], spring, damp, rest));
+				Hooke *hooke = new Hooke(&cloth[x][z - 1], &cloth[x][z], spring, damp, rest);
+				cloth[x][z - 1].addForce(hooke);
+				cloth[x][z].addForce(hooke);
 			}
 			if (x > 0) {
-				cloth[x - 1][z].addForce(new Hooke(&cloth[x - 1][z], &cloth[x][z], spring, damp, rest));
-				cloth[x][z].addForce(new Hooke(&cloth[x][z], &cloth[x - 1][z], spring, damp, rest));
+				Hooke *hooke = new Hooke(&cloth[x - 1][z], &cloth[x][z], spring, damp, rest);
+				cloth[x - 1][z].addForce(hooke);
+				cloth[x][z].addForce(hooke);
 			}
 		}
 	}
@@ -721,14 +731,12 @@ void ClothDemo() {
 
 			for (int x = 0; x < sideLength; ++x) {
 				for (int z = 0; z < sideLength; ++z) {
+					cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
 					if (x == 0 && (z == 0 || z == sideLength - 1)) {
 						cloth[x][z].setAcc(glm::vec3(0.0f));
 					}
 					else if (x == sideLength - 1 && (z == 0 || z == sideLength - 1)) {
 						cloth[x][z].setAcc(glm::vec3(0.0f));
-					}
-					else {
-						cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
 					}
 				}
 			}
