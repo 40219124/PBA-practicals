@@ -835,7 +835,7 @@ void FlagDemo() {
 
 	double timeSpeed = 1.0;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 200.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
@@ -865,9 +865,11 @@ void FlagDemo() {
 
 			for (int x = 0; x < sideLength; ++x) {
 				for (int z = 0; z < sideLength; ++z) {
-					cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
 					if (z == sideLength - 1 && (x == 0 || x == sideLength - 1)) {
 						cloth[x][z].setAcc(glm::vec3(0.0f));
+					}
+					else {
+						cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
 					}
 				}
 			}

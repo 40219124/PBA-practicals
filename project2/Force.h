@@ -10,7 +10,7 @@ class Force
 public:
 	Force() {}
 	~Force() {}
-	virtual glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
+	virtual glm::vec3 apply(const float totalTime, const glm::vec3 &pos, const glm::vec3 &vel);
 };
 /*
 Gravity Class
@@ -24,7 +24,7 @@ public:
 	glm::vec3 getGravity() const { return m_gravity; }
 	void setGravity(glm::vec3 gravity) { m_gravity = gravity; }
 	// Physics
-	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const float totalTime, const glm::vec3 &pos, const glm::vec3 &vel);
 private:
 	glm::vec3 m_gravity = glm::vec3(0.0f, -9.8f, 0.0f);
 };
@@ -35,7 +35,7 @@ class Drag : public Force {
 public:
 	Drag() {}
 	// Physics
-	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const float totalTime, const glm::vec3 &pos, const glm::vec3 &vel);
 private:
 };
 
@@ -57,14 +57,10 @@ public:
 	float getDamp() { return m_kdamp; }
 	float getStiff() { return m_kstiff; }
 
-	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const float totalTime, const glm::vec3 &pos, const glm::vec3 &vel);
 
 private:
-	void Cycle() {
-		m_cycle = (m_cycle + 1) % 2;
-	}
-
-	int m_cycle = 0;
+	float m_tTime = -1.0f;
 	glm::vec3 m_result = glm::vec3(0.0f);
 
 	float m_kstiff;
@@ -85,14 +81,10 @@ public:
 		m_airSpeed = airSpeed;
 	}
 
-	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &vel);
+	glm::vec3 apply(const float totalTime, const glm::vec3 &pos, const glm::vec3 &vel);
 
 private:
-	void Cycle() {
-		m_cycle = (m_cycle + 1) % 3;
-	}
-
-	int m_cycle = 0;
+	float m_tTime = -1.0f;
 	glm::vec3 m_result = glm::vec3(0.0f);
 
 	glm::vec3 *m_airSpeed;
