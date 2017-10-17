@@ -473,12 +473,12 @@ void ChainDemo() {
 
 		accumulator += frameDeltaTime;
 
-		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
 
 		while (accumulator >= fixedDeltaTime) {
 
 			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
-				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), (float)totalTime, (float)fixedDeltaTime));
 			}
 			particles[0].setAcc(glm::vec3(0.0f));
 			for (int pIndex = 1; pIndex < particleCount; ++pIndex) {
@@ -553,12 +553,12 @@ void UDemo() {
 
 		accumulator += frameDeltaTime;
 
-		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
 
 		while (accumulator >= fixedDeltaTime) {
 
 			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
-				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), (float)totalTime, (float)fixedDeltaTime));
 			}
 			particles[0].setAcc(glm::vec3(0.0f));
 			particles[particleCount - 1].setAcc(glm::vec3(0.0f));
@@ -634,12 +634,12 @@ void U2Demo() {
 
 		accumulator += frameDeltaTime;
 
-		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
 
 		while (accumulator >= fixedDeltaTime) {
 
 			for (int pIndex = 0; pIndex < particleCount; ++pIndex) {
-				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), totalTime, fixedDeltaTime));
+				particles[pIndex].setAcc(particles[pIndex].applyForces(particles[pIndex].getPos(), particles[pIndex].getVel(), (float)totalTime, (float)fixedDeltaTime));
 			}
 			particles[0].setAcc(glm::vec3(0.0f));
 			particles[particleCount - 1].setAcc(glm::vec3(0.0f));
@@ -725,13 +725,13 @@ void ClothDemo() {
 
 		accumulator += frameDeltaTime;
 
-		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
 
 		while (accumulator >= fixedDeltaTime) {
 
 			for (int x = 0; x < sideLength; ++x) {
 				for (int z = 0; z < sideLength; ++z) {
-					cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
+					cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), (float)totalTime, (float)fixedDeltaTime));
 					if (x == 0 && (z == 0 || z == sideLength - 1)) {
 						cloth[x][z].setAcc(glm::vec3(0.0f));
 					}
@@ -849,7 +849,7 @@ void FlagDemo() {
 
 		accumulator += frameDeltaTime;
 
-		app.doMovement((GLfloat)frameDeltaTime / timeSpeed);
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
 
 		while (accumulator >= fixedDeltaTime) {
 
@@ -869,7 +869,7 @@ void FlagDemo() {
 						cloth[x][z].setAcc(glm::vec3(0.0f));
 					}
 					else {
-						cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), totalTime, fixedDeltaTime));
+						cloth[x][z].setAcc(cloth[x][z].applyForces(cloth[x][z].getPos(), cloth[x][z].getVel(), (float)totalTime, (float)fixedDeltaTime));
 					}
 				}
 			}

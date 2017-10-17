@@ -38,6 +38,11 @@ glm::vec3 Hooke::apply(const float totalTime, const glm::vec3 &pos, const glm::v
 		float velEnd = glm::dot(gapUnit, this->getEnd()->getVel());
 
 		result = ((-this->getStiff() * (this->getRest() - glm::length(gap))) - (this->getDamp() * (velRoot - velEnd))) * gapUnit;
+
+		if (getEnd()->getPos() == pos) {
+			result = -result;
+		}
+
 		this->m_result = result;
 		this->m_tTime = totalTime;
 	}
