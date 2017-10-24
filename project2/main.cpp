@@ -24,6 +24,7 @@
 #include "Mesh.h"
 #include "Body.h"
 #include "Particle.h"
+#include "RigidBody.h"
 
 // time
 GLfloat deltaTime = 0.0f;
@@ -914,13 +915,74 @@ void FlagDemo() {
 }
 
 void FirstRB() {
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
 
+	Mesh plane = CreatePlane(5.0f);
+
+	glm::vec3 cubeSize;
+	glm::vec3 cubeBL;
+	CreateCubeVectors(5.0f, cubeSize, cubeBL);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	Gravity grav = Gravity::Gravity(aGravity);
+
+	Shader shader = Shader("resources/shader/core.vert", "resources/shaders/core_green.frag");
+
+	RigidBody cube = RigidBody();
+	Mesh cMesh = Mesh::Mesh(Mesh::CUBE);
+	cube.setMesh(cMesh);
+	cube.getMesh().setShader(Shader("resources/shader/core.vert", "resources/shaders/core_green.frag"));
+
+	cube.translate(glm::vec3(0.0f, 3.0f, 0.0f));
+	cube.setVel(glm::vec3(1.0f, 7.0f, 0.0f));
+	cube.setAngAccl(glm::vec3(0.0f, 2.0f, 0.0f));
+
+	cube.addForce(&grav);
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		accumulator += frameDeltaTime;
+
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
+
+		while (accumulator >= fixedDeltaTime) {
+			cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+			cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
+			cube.translate(cube.getVel() * fixedDeltaTime);
+
+			accumulator -= fixedDeltaTime;
+			totalTime += fixedDeltaTime;
+		}
+
+		app.clear();
+		app.draw(plane);
+		app.draw(cube.getMesh());
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+
+		static int frameCount = 1;
+		std::cout << (1.0f / ((currentFrameTime - startTime) / frameCount)) << std::endl;
+		frameCount++;
+	}
 }
 
 // main function
 int main()
 {
-	int demo = 3;
+	int demo = 8;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -945,6 +1007,9 @@ int main()
 		break;
 	case 7:
 		FlagDemo();
+		break;
+	case 8:
+		FirstRB();
 		break;
 	default:
 		BoxDemo();
