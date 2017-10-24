@@ -913,10 +913,14 @@ void FlagDemo() {
 	}
 }
 
+void FirstRB() {
+
+}
+
 // main function
 int main()
 {
-	int demo = 7;
+	int demo = 3;
 	switch (demo) {
 	case 0:
 		BoxDemo();
