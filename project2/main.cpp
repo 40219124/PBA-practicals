@@ -916,7 +916,7 @@ void FlagDemo() {
 
 void FirstRB() {
 	Application app = Application::Application();
-	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 20.0f));
 
 	Mesh plane = CreatePlane(5.0f);
 
@@ -932,11 +932,13 @@ void FirstRB() {
 	RigidBody cube = RigidBody();
 	Mesh cMesh = Mesh::Mesh(Mesh::CUBE);
 	cube.setMesh(cMesh);
-	cube.getMesh().setShader(Shader("resources/shader/core.vert", "resources/shaders/core_green.frag"));
+	cube.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 
 	cube.translate(glm::vec3(0.0f, 3.0f, 0.0f));
 	cube.setVel(glm::vec3(1.0f, 7.0f, 0.0f));
 	cube.setAngAccl(glm::vec3(0.0f, 2.0f, 0.0f));
+
+	cube.setMass(1.0f);
 
 	cube.addForce(&grav);
 
