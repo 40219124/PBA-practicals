@@ -935,7 +935,7 @@ void FirstRB() {
 	cube.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 
 	cube.translate(glm::vec3(0.0f, 3.0f, 0.0f));
-	cube.setVel(glm::vec3(1.0f, 7.0f, 0.0f));
+	cube.setVel(glm::vec3(1.0f, 20.0f, 0.0f));
 	cube.setAngAccl(glm::vec3(0.0f, 2.0f, 0.0f));
 
 	cube.setMass(1.0f);
@@ -960,8 +960,20 @@ void FirstRB() {
 
 		while (accumulator >= fixedDeltaTime) {
 			cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+
 			cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
+			cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
+
 			cube.translate(cube.getVel() * fixedDeltaTime);
+
+			glm::vec3 dRot = cube.getAngVel() * fixedDeltaTime;
+			if (glm::dot(dRot, dRot) > 0) {
+				cube.rotate(sqrtf(glm::dot(dRot, dRot)), dRot);
+			}
+
+			if (totalTime < 2.0f) {
+				cube.setAngAccl(cube.getAngAcc() - cube.getAngAcc() * (fixedDeltaTime) / (2.0f - totalTime));
+			}
 
 			accumulator -= fixedDeltaTime;
 			totalTime += fixedDeltaTime;
