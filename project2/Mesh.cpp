@@ -96,7 +96,7 @@ Mesh::Mesh(MeshType type) {
 			if (vertices[from].getCoord() == m_vertices[to].getCoord()) {
 				break;
 			}
-			else if (to = m_vertices.size() - 1) {
+			else if (to == m_vertices.size() - 1) {
 				m_vertices.push_back(vertices[from]);
 			}
 		}

@@ -918,7 +918,8 @@ void FirstRB() {
 	Application app = Application::Application();
 	CreateApplication(app, glm::vec3(0.0f, 4.0f, 20.0f));
 
-	Mesh plane = CreatePlane(5.0f);
+	Mesh plane = CreatePlane(10.0f);
+	plane.setPos(glm::vec3(0.0f));
 
 	glm::vec3 cubeSize;
 	glm::vec3 cubeBL;
@@ -935,8 +936,8 @@ void FirstRB() {
 	cube.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 
 	cube.translate(glm::vec3(0.0f, 3.0f, 0.0f));
-	cube.setVel(glm::vec3(1.0f, 20.0f, 0.0f));
-	cube.setAngAccl(glm::vec3(0.0f, 2.0f, 0.0f));
+	cube.setVel(glm::vec3(1.0f, 12.0f, 0.0f));
+	cube.setAngAccl(glm::vec3(01.1f, 2.0f, 0.7f));
 
 	cube.setMass(1.0f);
 
@@ -974,6 +975,20 @@ void FirstRB() {
 					cube.rotate(sqrtf(glm::dot(dRot, dRot)), dRot);
 				}
 
+				std::vector<Vertex> verts = cube.getMesh().getVertices();
+				glm::mat4 m = cube.getMesh().getModel();
+				for (int vCount = 0; vCount < verts.size(); ++vCount) {
+					glm::vec4 worldV = m * glm::vec4(verts[vCount].getCoord(), 1.0f);
+					worldV = worldV / worldV.w;
+					if (worldV.y < 0.0f && cube.getVel().y < 0.0f) {
+						cube.setAngVel(-cube.getAngVel());
+						cube.setVel(1, abs(cube.getVel().y) * 0.8f);
+						//std::cout << vCount << ": " << worldV.y << std::endl;
+						//pause = true;
+					}
+
+				}
+
 				if (totalTime < 2.0f) {
 					cube.setAngAccl(cube.getAngAcc() - cube.getAngAcc() * (fixedDeltaTime) / (2.0f - totalTime));
 				}
@@ -992,7 +1007,7 @@ void FirstRB() {
 		lastFrameTime = currentFrameTime;
 
 		static int frameCount = 1;
-		std::cout << (1.0f / ((currentFrameTime - startTime) / frameCount)) << std::endl;
+		//std::cout << (1.0f / ((currentFrameTime - startTime) / frameCount)) << std::endl;
 		frameCount++;
 	}
 }
