@@ -64,7 +64,7 @@ void Application::doMovement(GLfloat deltaTime)
 		camera.ProcessKeyboard(UP, deltaTime);
 	}
 
-	if (keys[GLFW_KEY_LEFT_SHIFT] || keys[GLFW_KEY_RIGHT])
+	if (keys[GLFW_KEY_LEFT_SHIFT])
 	{
 		camera.ProcessKeyboard(DOWN, deltaTime);
 	}
