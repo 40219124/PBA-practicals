@@ -15,7 +15,7 @@ public:
 	glm::vec3 getAngVel() { return m_angVel; }
 	glm::vec3 getAngAcc() { return m_angAcc; }
 	glm::mat3 getInvInertia() { return m_invInertia; }
-	void scale(glm::vec3 vect);
+	void scale(glm::vec3 vect) {}
 
 private:
 	float m_density;

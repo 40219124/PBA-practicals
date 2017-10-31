@@ -949,34 +949,38 @@ void FirstRB() {
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
 
+	bool pause = false;
+
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
 		double currentFrameTime = glfwGetTime();
 		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
 
-		accumulator += frameDeltaTime;
-
 		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
 
-		while (accumulator >= fixedDeltaTime) {
-			cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+		if (!pause) {
+			accumulator += frameDeltaTime;
 
-			cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
-			cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
+			while (accumulator >= fixedDeltaTime) {
+				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
 
-			cube.translate(cube.getVel() * fixedDeltaTime);
+				cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
+				cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
 
-			glm::vec3 dRot = cube.getAngVel() * fixedDeltaTime;
-			if (glm::dot(dRot, dRot) > 0) {
-				cube.rotate(sqrtf(glm::dot(dRot, dRot)), dRot);
+				cube.translate(cube.getVel() * fixedDeltaTime);
+
+				glm::vec3 dRot = cube.getAngVel() * fixedDeltaTime;
+				if (glm::dot(dRot, dRot) > 0) {
+					cube.rotate(sqrtf(glm::dot(dRot, dRot)), dRot);
+				}
+
+				if (totalTime < 2.0f) {
+					cube.setAngAccl(cube.getAngAcc() - cube.getAngAcc() * (fixedDeltaTime) / (2.0f - totalTime));
+				}
+
+				accumulator -= fixedDeltaTime;
+				totalTime += fixedDeltaTime;
 			}
-
-			if (totalTime < 2.0f) {
-				cube.setAngAccl(cube.getAngAcc() - cube.getAngAcc() * (fixedDeltaTime) / (2.0f - totalTime));
-			}
-
-			accumulator -= fixedDeltaTime;
-			totalTime += fixedDeltaTime;
 		}
 
 		app.clear();
