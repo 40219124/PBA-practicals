@@ -929,10 +929,6 @@ void FirstRB() {
 	plane.setPos(glm::vec3(0.0f));
 	glm::vec3 nPlane = glm::vec3(0.0f, 1.0f, 0.0f);
 
-	glm::vec3 cubeSize;
-	glm::vec3 cubeBL;
-	CreateCubeVectors(5.0f, cubeSize, cubeBL);
-
 	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
 	Gravity grav = Gravity::Gravity(aGravity);
 
@@ -1123,10 +1119,111 @@ void ImpDemo() {
 	}
 }
 
+void CollDetDemo() {
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(0.0f, 4.0f, 20.0f));
+
+	Mesh plane = CreatePlane(10.0f);
+	plane.setPos(glm::vec3(0.0f));
+	glm::vec3 nPlane = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
+	Gravity grav = Gravity::Gravity(aGravity);
+
+	Shader shader = Shader("resources/shader/core.vert", "resources/shaders/core_green.frag");
+
+	RigidBody cube = RigidBody();
+	Mesh cMesh = Mesh::Mesh(Mesh::CUBE);
+	cube.setMesh(cMesh);
+	cube.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
+
+	cube.translate(glm::vec3(0.0f, 5.0f, 0.0f));
+	cube.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
+	cube.setAngVel(glm::vec3(0.1f, 0.5f, 0.0f));
+
+	cube.setMass(1.0f);
+	cube.scale(glm::vec3(1.0f, 3.0f, 1.0f));
+
+	cube.addForce(&grav);
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	bool pause = false;
+
+	glm::vec3 impLoc = glm::vec3(1.0f, 03.5f, 0.0f);
+	glm::vec3 impDir = glm::vec3(-3.0f, 0.0f, 0.0f);
+	bool hit = false;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
+
+		if (!pause) {
+			accumulator += frameDeltaTime;
+
+			while (accumulator >= fixedDeltaTime) {
+				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+
+				cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
+				cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
+
+				cube.translate(cube.getVel() * fixedDeltaTime);
+
+				glm::mat3 angVelSkew = glm::matrixCross3(cube.getAngVel());
+				glm::mat3 rot = glm::mat3(cube.getRotate());
+				rot += angVelSkew * rot * fixedDeltaTime;
+				rot = glm::orthonormalize(rot);
+				cube.setRotate(glm::mat4(rot));
+
+				std::vector<Vertex> verts = cube.getMesh().getVertices();
+				glm::vec3 vertAv = glm::vec3(0.0f);
+				int colCount = 0;
+				glm::mat4 m = cube.getMesh().getModel();
+				for (int vCount = 0; vCount < verts.size(); ++vCount) {
+					glm::vec4 vWorld = m * glm::vec4(verts[vCount].getCoord(), 1.0f);
+					vWorld = vWorld / vWorld.w;
+					if (vWorld.y < 0.0f) {
+						std::cout << "vertex: " << glm::to_string(glm::vec3(vWorld)) << std::endl;
+						vertAv += glm::vec3(vWorld);
+						colCount++;
+					}
+				}
+				if (colCount > 0) {
+					pause = true;
+					std::cout << "average: " << glm::to_string(vertAv / (float)colCount) << std::endl;
+				}
+
+				if (totalTime < 2.0f) {
+					cube.setAngAccl(cube.getAngAcc() - cube.getAngAcc() * (fixedDeltaTime) / (2.0f - totalTime));
+				}
+
+				accumulator -= fixedDeltaTime;
+				totalTime += fixedDeltaTime;
+			}
+		}
+
+		app.clear();
+		app.draw(plane);
+		app.draw(cube.getMesh());
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+	}
+}
+
 // main function
 int main()
 {
-	int demo = 9;
+	int demo = 10;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -1157,6 +1254,9 @@ int main()
 		break;
 	case 9:
 		ImpDemo();
+		break;
+	case 10:
+		CollDetDemo();
 		break;
 	default:
 		BoxDemo();
