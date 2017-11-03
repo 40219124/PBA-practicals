@@ -1049,10 +1049,84 @@ void FirstRB() {
 	}
 }
 
+void ImpDemo() {
+	Application app = Application::Application();
+	CreateApplication(app, glm::vec3(2.0f, 4.0f, 20.0f));
+
+	Shader shader = Shader("resources/shader/core.vert", "resources/shaders/core_green.frag");
+
+	RigidBody cube = RigidBody();
+	Mesh cMesh = Mesh::Mesh(Mesh::CUBE);
+	cube.setMesh(cMesh);
+	cube.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
+
+	cube.translate(glm::vec3(0.0f, 5.0f, 0.0f));
+	cube.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
+
+	cube.setMass(2.0f);
+	cube.scale(glm::vec3(1.0f, 3.0f, 1.0f));
+
+	std::cout << glm::to_string(cube.getInvInertia()) << std::endl;
+
+	double timeSpeed = 1.0;
+	double totalTime = 0.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
+	double accumulator = 0.0;
+	double startTime = glfwGetTime();
+	double lastFrameTime = startTime;
+
+	bool pause = false;
+
+	glm::vec3 impLoc = glm::vec3(1.0f, -1.0f, 0.0f);
+	glm::vec3 impDir = glm::vec3(-4.0f, 0.0f, 0.0f);
+	bool hit = false;
+
+	while (!glfwWindowShouldClose(app.getWindow()))
+	{
+		double currentFrameTime = glfwGetTime();
+		double frameDeltaTime = (currentFrameTime - lastFrameTime) * timeSpeed;
+
+		app.doMovement((GLfloat)frameDeltaTime / (GLfloat)timeSpeed);
+
+		if (!pause) {
+			accumulator += frameDeltaTime;
+
+			while (accumulator >= fixedDeltaTime) {
+				if (totalTime >= 2.0f && !hit) {
+					ApplyImpulse(cube, impLoc, impDir);
+					hit = true;
+				}
+				else {
+					cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
+					cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
+				}
+
+				cube.translate(cube.getVel() * fixedDeltaTime);
+
+				glm::mat3 angVelSkew = glm::matrixCross3(cube.getAngVel());
+				glm::mat3 rot = glm::mat3(cube.getRotate());
+				rot += angVelSkew * rot * fixedDeltaTime;
+				rot = glm::orthonormalize(rot);
+				cube.setRotate(glm::mat4(rot));
+
+				accumulator -= fixedDeltaTime;
+				totalTime += fixedDeltaTime;
+			}
+		}
+
+		app.clear();
+		app.draw(cube.getMesh());
+
+		app.display();
+
+		lastFrameTime = currentFrameTime;
+	}
+}
+
 // main function
 int main()
 {
-	int demo = 8;
+	int demo = 9;
 	switch (demo) {
 	case 0:
 		BoxDemo();
@@ -1080,6 +1154,9 @@ int main()
 		break;
 	case 8:
 		FirstRB();
+		break;
+	case 9:
+		ImpDemo();
 		break;
 	default:
 		BoxDemo();
