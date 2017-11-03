@@ -11,14 +11,15 @@ public:
 	void setAngVel(const glm::vec3 &omega) { m_angVel = omega; }
 	void setAngAccl(const glm::vec3 &alpha) { m_angAcc = alpha; }
 	void setInvInertia(const glm::mat3 &invInertia) { m_invInertia = invInertia; }
+	void setMass(float mass);
 
 	glm::vec3 getAngVel() { return m_angVel; }
 	glm::vec3 getAngAcc() { return m_angAcc; }
-	glm::mat3 getInvInertia() { return m_invInertia; }
-	void scale(glm::vec3 vect) {}
+	glm::mat3 getInvInertia() { return glm::mat3(getRotate()) * m_invInertia * glm::mat3(glm::transpose(getRotate())); }
+	void scale(glm::vec3 vect);
 	
 private:
-	glm::mat3 calcIT() {}
+	glm::mat3 calcIT();
 
 	float m_density;
 	glm::vec3 m_dimensions = glm::vec3(2.0f, 2.0f, 2.0f);

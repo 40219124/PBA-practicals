@@ -84,6 +84,9 @@ public:
 		m_shader.Use();
 	}
 
+	// set the rotation of the mesh
+	void setRotation(const glm::mat4 &rot) { m_rotate = rot; }
+
 
 	/*
 	** INITIALISATION AND UTILITY METHODS
