@@ -1359,27 +1359,29 @@ void FrictionDemo() {
 	cube.setMesh(cMesh);
 	cube.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag"));
 
-	cube.translate(glm::vec3(0.0f, 5.0f, 0.0f));
-	cube.setVel(glm::vec3(0.0f, 0.0f, 0.0f));
+	cube.translate(glm::vec3(0.0f, 6.0f, 0.0f));
+	cube.setVel(glm::vec3(0.0f, -0.0f, 0.0f));
 
 	cube.setMass(2.0f);
 
-	int demo = 1;
+	float mu = 0.6f;
+
+	int demo = 2;
 	if (demo == 1) {
 		cube.setAngVel(glm::vec3(0.0f, 0.0f, 0.5f));
 		cube.setCor(1.0f);
 	}
 	else if (demo == 2) {
-		cube.setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
-		cube.setCor(0.7f);
+		cube.setAngVel(glm::vec3(0.0f, 01.0f, 0.51f));
+		cube.setCor(0.6f);
 	}
 	cube.scale(glm::vec3(1.0f, 3.0f, 1.0f));
 
 	cube.addForce(&grav);
 
-	double timeSpeed = 1.0;
+	double timeSpeed = 1.40;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 500.0;
+	double fixedDeltaTime = timeSpeed * 1.0 / 500.0; //0.002
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
@@ -1433,7 +1435,8 @@ void FrictionDemo() {
 					// jr = -(1+e)vr.n / m-1 +n.(I(r1*n))*r1
 					glm::vec3 v1 = (cube.getVel() + glm::cross(cube.getAngVel(), glm::vec3(vertAv)));
 					float numer = -(1 + cube.getCor()) * glm::dot(v1, nPlane);
-					float denom = (1 / cube.getMass()) + glm::dot(nPlane, glm::cross(cube.getInvInertia() * glm::cross(glm::vec3(vertAv), nPlane), glm::vec3(vertAv)));
+					float denom = (1 / cube.getMass()) + glm::dot(nPlane,
+						glm::cross(cube.getInvInertia() * glm::cross(glm::vec3(vertAv), nPlane), glm::vec3(vertAv)));
 					float j = numer / denom;
 
 					glm::vec3 vNew = cube.getVel() + nPlane * j / cube.getMass();
@@ -1441,6 +1444,25 @@ void FrictionDemo() {
 
 					cube.setVel(vNew);
 					cube.setAngVel(wNew);
+
+					/*float numer2 = (-(1.0 + mu)) * glm::dot(v1, vTan / glm::length(vTan));
+					float denom2 = (1 / cube.getMass()) + glm::dot(vTan / glm::length(vTan),
+						glm::cross(cube.getInvInertia() * glm::cross(glm::vec3(vertAv), vTan / glm::length(vTan)), glm::vec3(vertAv)));
+					float j2 = numer2 / denom2;*/
+					glm::vec3 vTan = v1 - glm::dot(v1, nPlane) * nPlane;
+					glm::vec3 jTan = (-mu) * abs(j) * (vTan / glm::length(vTan));
+					float maxFW = glm::length(cube.getAngVel()) / glm::length(cube.getInvInertia() * glm::cross(vertAv, vTan));
+					if (glm::length(jTan) > maxFW) {
+						jTan = jTan / glm::length(jTan);
+						jTan *= maxFW;
+					}
+					ApplyImpulse(cube, vertAv, jTan);
+
+					if (glm::length2(cube.getVel()) < 0.0025) {
+						cube.setAngVel(cube.getAngVel() * 0.);
+					}
+
+					//ApplyImpulse(cube, vertAv, j2 * vTan / glm::length(vTan));
 				}
 
 				if (totalTime < 2.0f) {
