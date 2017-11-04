@@ -1381,7 +1381,7 @@ void FrictionDemo() {
 
 	double timeSpeed = 1.40;
 	double totalTime = 0.0;
-	double fixedDeltaTime = timeSpeed * 1.0 / 500.0; //0.002
+	double fixedDeltaTime = timeSpeed * 1.0 / 200.0; //0.002
 	double accumulator = 0.0;
 	double startTime = glfwGetTime();
 	double lastFrameTime = startTime;
@@ -1445,10 +1445,6 @@ void FrictionDemo() {
 					cube.setVel(vNew);
 					cube.setAngVel(wNew);
 
-					/*float numer2 = (-(1.0 + mu)) * glm::dot(v1, vTan / glm::length(vTan));
-					float denom2 = (1 / cube.getMass()) + glm::dot(vTan / glm::length(vTan),
-						glm::cross(cube.getInvInertia() * glm::cross(glm::vec3(vertAv), vTan / glm::length(vTan)), glm::vec3(vertAv)));
-					float j2 = numer2 / denom2;*/
 					glm::vec3 vTan = v1 - glm::dot(v1, nPlane) * nPlane;
 					glm::vec3 jTan = (-mu) * abs(j) * (vTan / glm::length(vTan));
 					float maxFW = glm::length(cube.getAngVel()) / glm::length(cube.getInvInertia() * glm::cross(vertAv, vTan));
@@ -1461,8 +1457,6 @@ void FrictionDemo() {
 					if (glm::length2(cube.getVel()) < 0.0025) {
 						cube.setAngVel(cube.getAngVel() * 0.);
 					}
-
-					//ApplyImpulse(cube, vertAv, j2 * vTan / glm::length(vTan));
 				}
 
 				if (totalTime < 2.0f) {
