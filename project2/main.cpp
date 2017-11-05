@@ -1435,6 +1435,9 @@ void FrictionDemo() {
 				}
 
 				if (vertAv != glm::vec3(0.0f)) {
+					glm::vec3 angV = cube.getAngVel();
+
+
 					vertAv = vertAv / colCount - cube.getPos();
 					cube.translate(glm::vec3(0.0f, -minY, 0.0f));
 					vertAv[1] -= minY;
@@ -1454,14 +1457,14 @@ void FrictionDemo() {
 
 					//v1 = (cube.getVel() + glm::cross(cube.getAngVel(), glm::vec3(vertAv)));
 					glm::vec3 vTan = v1 - glm::dot(v1, nPlane) * nPlane;
-					//glm::vec3 jTan = (-mu) * abs(j) * (vTan / glm::length(vTan));
+					glm::vec3 jTan = (-mu) * abs(j) * (vTan / glm::length(vTan));
 					//float maxFW = glm::length(vTan);
-					////float maxFW = glm::length(glm::cross(cube.getAngVel(), glm::vec3(vertAv)));// / glm::length(cube.getInvInertia() * glm::cross(vertAv, vTan / glm::length(vTan)));
-					//if (glm::length(jTan) > maxFW) {
-					//	jTan = jTan / glm::length(jTan);
-					//	jTan *= maxFW;
-					//} 
-					float jTanNum = -glm::dot(v1, nPlane);
+					float maxFW = glm::length(cube.getAngVel() / glm::length(cube.getInvInertia() * glm::cross(vertAv, vTan / glm::length(vTan))));
+					if (glm::length(jTan) > maxFW) {
+						jTan = jTan / glm::length(jTan);
+						jTan *= maxFW;
+					} 
+					/*float jTanNum = -glm::dot(v1, nPlane);
 					float jTanDen = (1.0f / cube.getMass()) + glm::dot(cube.getInvInertia() * glm::cross(glm::cross(vertAv, vTan), vertAv), vTan);
 
 					float jTan2 = jTanNum / jTanDen;
@@ -1470,14 +1473,17 @@ void FrictionDemo() {
 						jTan2 = jTanLim;
 					}
 
-					glm::vec3 jTanVec = jTan2 * vTan / glm::length(vTan);
+					glm::vec3 jTanVec = jTan2 * vTan / glm::length(vTan);*/
 
-					ApplyImpulse(cube, vertAv, jTanVec);
+					ApplyImpulse(cube, vertAv, jTan);
 
-					if (glm::length2(cube.getVel()) < 0.0025) {
-						glm::vec3 angV = cube.getAngVel();
-						angV.y *= tan(glm::length(cube.getAngVel())) / M_PI_4;
-						//cube.setAngVel(angV);
+					float dot = abs(glm::dot(angV, nPlane));
+					if (dot<0.05) {
+						float lengTh = glm::length2(cube.getAngVel());
+						float tanVal = atan(lengTh);
+						tanVal /= M_PI_2;
+						angV.y *= tanVal;
+						cube.setAngVel(angV);
 					}
 				}
 
