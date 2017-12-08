@@ -1509,50 +1509,53 @@ void FrictionDemo() {
 // main function
 int main()
 {
-	int demo = 12;
-	switch (demo) {
-	case 0:
-		BoxDemo();
-		break;
-	case 1:
-		IntegrateDemo();
-		break;
-	case 2:
-		WindDemo();
-		break;
-	case 3:
-		ChainDemo();
-		break;
-	case 4:
-		UDemo();
-		break;
-	case 5:
-		U2Demo();
-		break;
-	case 6:
-		ClothDemo();
-		break;
-	case 7:
-		FlagDemo();
-		break;
-	case 8:
-		FirstRB();
-		break;
-	case 9:
-		ImpDemo();
-		break;
-	case 10:
-		CollDetDemo();
-		break;
-	case 11:
-		CollResDemo();
-		break;
-	case 12:
-		FrictionDemo();
-		break;
-	default:
-		BoxDemo();
-		break;
+	int demo = 0;
+	while (demo < 13) {
+		switch (demo) {
+		case 0:
+			BoxDemo();
+			break;
+		case 1:
+			IntegrateDemo();
+			break;
+		case 2:
+			WindDemo();
+			break;
+		case 3:
+			ChainDemo();
+			break;
+		case 4:
+			UDemo();
+			break;
+		case 5:
+			U2Demo();
+			break;
+		case 6:
+			ClothDemo();
+			break;
+		case 7:
+			FlagDemo();
+			break;
+		case 8:
+			FirstRB();
+			break;
+		case 9:
+			ImpDemo();
+			break;
+		case 10:
+			CollDetDemo();
+			break;
+		case 11:
+			CollResDemo();
+			break;
+		case 12:
+			FrictionDemo();
+			break;
+		default:
+			BoxDemo();
+			break;
+		}
+		demo++;
 	}
 
 	return EXIT_SUCCESS;
