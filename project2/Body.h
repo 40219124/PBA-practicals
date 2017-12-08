@@ -46,7 +46,7 @@ public:
 	void setVel(int i, float v) { m_vel[i] = v; } //set the ith coordinate of the velocity vector
 	void setPos(const glm::vec3 &vect) { m_pos = vect; m_mesh.setPos(vect); }
 	void setPos(int i, float p) { m_pos[i] = p; m_mesh.setPos(i, p); } //set the ith coordinate of the position vector
-	void setRotate(const glm::mat4 &rot) { m_mesh.setRotation(rot); }
+	void setRotate(const glm::mat4 &rot) { m_mesh.setRotate(rot); }
 
 	// physical properties
 	void setCor(float cor) { m_cor = cor; }

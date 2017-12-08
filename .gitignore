@@ -1426,7 +1426,6 @@ project2/soil/include/SOIL2/SOIL2.h
 project2/soil/include/SOIL2/SOIL2.c
 project2/simulation.vcxproj.filters
 project2/simulation.vcxproj
-project2/simulation.sln
 project2/resources/shaders/transp.frag
 project2/resources/shaders/core_transp.frag
 project2/resources/shaders/core_red.frag

@@ -52,6 +52,9 @@ public:
 		updateCameraVectors();
 	}
 
+	// get position
+	glm::vec3 getPosition() { return m_position; }
+
 	// Returns the view matrix calculated using Eular Angles and the LookAt Matrix
 	glm::mat4 GetViewMatrix()
 	{

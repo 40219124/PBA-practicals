@@ -21,10 +21,12 @@ double Application::lastY = HEIGHT / 2.0;
 
 bool Application::firstMouse = true;
 bool Application::keys[1024];
+bool Application::pauseSimulation = false;
 
 
 Application::Application()
 {
+	m_shader = Shader();// "resources/shaders/core.vert", "resources/shaders/core.frag");
 }
 
 
@@ -76,6 +78,11 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+
+	if (key == GLFW_KEY_P && action == GLFW_PRESS)
+	{
+		Application::pauseSimulation = !Application::pauseSimulation;
 	}
 
 	if (key >= 0 && key < 1024)
@@ -181,20 +188,33 @@ void Application::draw(const Mesh &mesh)
 	m_projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
 	m_view = camera.GetViewMatrix();
 
-	// Get the uniform locations
+	// Get the uniform locations for MVP
 	GLint modelLoc = glGetUniformLocation(mesh.getShader().Program, "model");
 	GLint viewLoc = glGetUniformLocation(mesh.getShader().Program, "view");
 	GLint projLoc = glGetUniformLocation(mesh.getShader().Program, "projection");
+	GLint rotateLoc = glGetUniformLocation(mesh.getShader().Program, "rotate");
+
+
+	// get the uniform locations for lighing
+	GLint ambientLoc = glGetUniformLocation(mesh.getShader().Program, "ambient");
+	GLint eyePositionLoc = glGetUniformLocation(mesh.getShader().Program, "eyePosition");
 
 	// Pass the matrices to the shader
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(mesh.getModel()));
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(m_view));
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(m_projection));
+	glUniformMatrix4fv(rotateLoc, 1, GL_FALSE, glm::value_ptr(mesh.getRotate()));
 
+
+	// pass lighting data to shader
+	glUniform4fv(ambientLoc, 1, glm::value_ptr(glm::vec4(0.0, 1.0, 1.0, 1.0)));
+	glUniform3fv(eyePositionLoc, 1, glm::value_ptr(Application::camera.getPosition()));
+	
 	glBindVertexArray(mesh.getVertexArrayObject());
 	glDrawArrays(GL_TRIANGLES, 0, mesh.getNumIndices());
 	glBindVertexArray(0);
 }
+
 
 void Application::display() {
 	glBindVertexArray(0);
