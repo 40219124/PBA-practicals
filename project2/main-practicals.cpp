@@ -974,7 +974,7 @@ void FirstRB() {
 			accumulator += frameDeltaTime;
 
 			while (accumulator >= fixedDeltaTime) {
-				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), (float)totalTime, deltaTime));
 
 				if (totalTime >= 2.0f && !hit) {
 					//ApplyImpulse(cube, impLoc, impDir);
@@ -997,7 +997,7 @@ void FirstRB() {
 				glm::vec3 vertAv = glm::vec3(0.0f);
 				float colCount = 0.0f;
 				glm::mat4 m = cube.getMesh().getModel();
-				for (int vCount = 0; vCount < verts.size(); ++vCount) {
+				for (int vCount = 0; vCount < (int)verts.size(); ++vCount) {
 					glm::vec4 vWorld = m * glm::vec4(verts[vCount].getCoord(), 1.0f);
 					vWorld = vWorld / vWorld.w;
 					if (vWorld.y < 0.0f && cube.getVel().y < 0.0f) {
@@ -1170,7 +1170,7 @@ void CollDetDemo() {
 			accumulator += frameDeltaTime;
 
 			while (accumulator >= fixedDeltaTime) {
-				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), (float)totalTime, deltaTime));
 
 				cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
 				cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
@@ -1187,7 +1187,7 @@ void CollDetDemo() {
 				glm::vec3 vertAv = glm::vec3(0.0f);
 				int colCount = 0;
 				glm::mat4 m = cube.getMesh().getModel();
-				for (int vCount = 0; vCount < verts.size(); ++vCount) {
+				for (int vCount = 0; vCount < (int)verts.size(); ++vCount) {
 					glm::vec4 vWorld = m * glm::vec4(verts[vCount].getCoord(), 1.0f);
 					vWorld = vWorld / vWorld.w;
 					if (vWorld.y < 0.0f) {
@@ -1276,7 +1276,7 @@ void CollResDemo() {
 			accumulator += frameDeltaTime;
 
 			while (accumulator >= fixedDeltaTime) {
-				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), (float)totalTime, deltaTime));
 
 				cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
 				cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
@@ -1294,7 +1294,7 @@ void CollResDemo() {
 				int colCount = 0;
 				float minY = 0.0f;
 				glm::mat4 m = cube.getMesh().getModel();
-				for (int vCount = 0; vCount < verts.size(); ++vCount) {
+				for (int vCount = 0; vCount < (int)verts.size(); ++vCount) {
 					glm::vec4 vWorld = m * glm::vec4(verts[vCount].getCoord(), 1.0f);
 					vWorld = vWorld / vWorld.w;
 					if (vWorld.y < 0.0f) {
@@ -1378,7 +1378,7 @@ void FrictionDemo() {
 	else if (demo == 3) {
 		cube.setPos(glm::vec3(-2.0f, 3.0f, 0.0f));
 		cube.setVel(glm::vec3(6.0f, 0.0f, 0.0f));
-		cube.setCor(0.6);
+		cube.setCor(0.6f);
 	}
 	cube.scale(glm::vec3(1.0f, 3.0f, 1.0f));
 
@@ -1404,7 +1404,7 @@ void FrictionDemo() {
 			accumulator += frameDeltaTime;
 
 			while (accumulator >= fixedDeltaTime) {
-				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), totalTime, deltaTime));
+				cube.setAcc(cube.applyForces(cube.getPos(), cube.getVel(), (float)totalTime, deltaTime));
 
 				cube.setVel(cube.getVel() + cube.getAcc() * fixedDeltaTime);
 				cube.setAngVel(cube.getAngVel() + cube.getAngAcc() * fixedDeltaTime);
@@ -1422,7 +1422,7 @@ void FrictionDemo() {
 				int colCount = 0;
 				float minY = 0.0f;
 				glm::mat4 m = cube.getMesh().getModel();
-				for (int vCount = 0; vCount < verts.size(); ++vCount) {
+				for (int vCount = 0; vCount < (int)verts.size(); ++vCount) {
 					glm::vec4 vWorld = m * glm::vec4(verts[vCount].getCoord(), 1.0f);
 					vWorld = vWorld / vWorld.w;
 					if (vWorld.y < 0.0f) {

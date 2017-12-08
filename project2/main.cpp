@@ -29,7 +29,7 @@
 // time
 float t = 0.0f;
 const float dt = 0.01f;
-float timeMultiplier = 2.0; // controls the speed of the simulation
+float timeMultiplier = 2.0f; // controls the speed of the simulation
 
 // forces
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
@@ -69,10 +69,10 @@ int main()
 	plane.setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(20.0f, 20.0f, 20.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
-		
+
 	// rigid body set up
 	RigidBody rb1 = RigidBody();
-	
+
 	// create sphere from obj
 	//Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
 
@@ -81,10 +81,10 @@ int main()
 
 	// load triangle
 	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
-	
+
 	// load quad
 	//Mesh m1 = Mesh::Mesh(Mesh::QUAD);
-	
+
 	// create cube
 	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
 
@@ -99,15 +99,27 @@ int main()
 	// add forces to Rigid body
 	//rb1.addForce(&g);
 
+	// create cube2
+	Mesh m2 = Mesh::Mesh(Mesh::CUBE);
+	RigidBody rb2 = RigidBody();
 
-	
+	rb2.setMesh(m2);
+	rb2.getMesh().setShader(rbShader);
+	//rb1.setBoxInvInertia();
+	rb2.setMass(1.0f);
+	rb2.translate(glm::vec3(-5.0f, 0.1f, 0.0f));
+	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
+	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 
 
-	
+
+
+
+
 
 	// time
 	float currentTime = (float)glfwGetTime();
-	float timeAccumulator = 0.0;
+	float timeAccumulator = 0.0f;
 
 
 	// Game loop
@@ -117,28 +129,28 @@ int main()
 		float newTime = (float)glfwGetTime();
 		float frameTime = newTime - currentTime;
 		currentTime = newTime;
-		timeAccumulator += frameTime;
-		timeAccumulator *= timeMultiplier;
-	
+		timeAccumulator += (frameTime * timeMultiplier);
+		// Manage interaction
+		app.doMovement(frameTime);
 
 		while (timeAccumulator >= dt) {
-			// Manage interaction
-			app.doMovement(dt);
 
 			/*
 			**	SIMULATION
 			*/
 			if (!Application::pauseSimulation) {
 
-				
+
 				//Integration (position)
 				integratePos(rb1, t, dt);
-				
+				integratePos(rb2, t, dt);
+
 				// integration (rotation)
 				integrateRot(rb1, dt);
+				integrateRot(rb2, dt);
 
 				// check collisions
-				
+
 
 			}
 			timeAccumulator -= dt;
@@ -146,16 +158,17 @@ int main()
 		}
 
 		/*
-		**	RENDER 
-		*/		
+		**	RENDER
+		*/
 		// clear buffer
 		app.clear();
-		
+
 		// draw groud plane
-		app.draw(plane);		
-		
+		app.draw(plane);
+
 		// draw rigid body
 		app.draw(rb1.getMesh());
+		app.draw(rb2.getMesh());
 
 		app.display();
 	}
