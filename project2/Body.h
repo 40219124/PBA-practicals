@@ -4,6 +4,7 @@
 
 #include "Mesh.h"
 #include "Force.h"
+#include "Obb.h"
 
 class Body
 {
@@ -16,6 +17,7 @@ public:
 	*/
 	// mesh
 	Mesh& getMesh() { return m_mesh; }
+	Obb& getColl() { return m_coll; }
 
 	// transform matrices
 	glm::mat4 getTranslate() const { return m_mesh.getTranslate(); }
@@ -39,6 +41,7 @@ public:
 	*/
 	// mesh
 	void setMesh(Mesh m) { m_mesh = m; }
+	void setColl(Obb c) { m_coll = c; }
 
 	// dynamic variables
 	void setAcc(const glm::vec3 &vect) { m_acc = vect; }
@@ -67,6 +70,7 @@ public:
 
 private:
 	Mesh m_mesh; // mesh used to represent the body
+	Obb m_coll; // collider used to break everything
 
 	float m_mass; // mass
 	float m_cor; // coefficient of restitution
