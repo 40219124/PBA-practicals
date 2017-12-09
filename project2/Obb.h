@@ -16,6 +16,8 @@ public:
 	void setRadii(glm::vec3 r) { m_radii = r; }
 	void setRadii(int i, float r) { m_radii[i] = r; }
 
+	void rotate(const float &angle, const glm::vec3 &vect);
+
 private:
 	glm::mat3 m_axes;
 	glm::vec3 m_radii;

@@ -13,10 +13,12 @@ Body::~Body()
 void Body::translate(const glm::vec3 &vect) {
 	m_pos = m_pos + vect;
 	m_mesh.translate(vect);
+	m_coll.setPos(m_pos);
 }
 
 void Body::rotate(float angle, const glm::vec3 &vect) {
 	m_mesh.rotate(angle, vect);
+	m_coll.rotate(angle, vect);
 }
 
 void Body::scale(const glm::vec3 &vect) {

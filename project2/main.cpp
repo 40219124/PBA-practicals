@@ -58,7 +58,7 @@ void integrateRot(RigidBody &rb, float dt) {
 bool checkCollision(Obb &obb1, Obb &obb2) {
 	float r1, r2;
 	glm::mat3 rot, absRot;
-	float error = 0.00001;
+	float error = 0.00001f;
 
 	// Projection of 2's axes onto 1's axes
 	for (int i = 0; i < 3; ++i) {
@@ -80,51 +80,51 @@ bool checkCollision(Obb &obb1, Obb &obb2) {
 
 	// Test axes L = 1[0], L = 1[1], L = 1[2]
 	for (int i = 0; i < 3; ++i) {
-		r1 = obb1.getRadii[i];
-		r2 = obb2.getRadii[0] * absRot[i][0] + obb2.getRadii[1] * absRot[i][1] + obb2.getRadii[2] * absRot[i][2];
+		r1 = obb1.getRadii()[i];
+		r2 = obb2.getRadii()[0] * absRot[i][0] + obb2.getRadii()[1] * absRot[i][1] + obb2.getRadii()[2] * absRot[i][2];
 		if (abs(t[i]) > (r1 + r2)) { return false; }
 	}
 	// Test axes L = 2[0], L = 2[1], L = 2[2]
 	for (int i = 0; i < 3; ++i) {
-		r1 = obb1.getRadii[0] * absRot[0][i] + obb1.getRadii[1] * absRot[1][i] + obb1.getRadii[2] * absRot[2][i];
-		r2 = obb2.getRadii[i];
+		r1 = obb1.getRadii()[0] * absRot[0][i] + obb1.getRadii()[1] * absRot[1][i] + obb1.getRadii()[2] * absRot[2][i];
+		r2 = obb2.getRadii()[i];
 		if (abs(t[0] * rot[0][i] + t[1] * rot[1][i] + t[2] * rot[2][i]) > (r1 + r2)) { return false; }
 	}
 	// Test axis L = 1[0] x 2[0]
-	r1 = obb1.getRadii[1] * absRot[2][0] + obb1.getRadii[2] * absRot[1][0];
-	r2 = obb2.getRadii[1] * absRot[0][2] + obb2.getRadii[2] * absRot[0][1];
+	r1 = obb1.getRadii()[1] * absRot[2][0] + obb1.getRadii()[2] * absRot[1][0];
+	r2 = obb2.getRadii()[1] * absRot[0][2] + obb2.getRadii()[2] * absRot[0][1];
 	if (abs(t[2] * rot[1][0] - t[1] * rot[2][0]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[0] x 2[1]
-	r1 = obb1.getRadii[1] * absRot[2][1] + obb1.getRadii[2] * absRot[1][1];
-	r2 = obb2.getRadii[0] * absRot[0][2] + obb2.getRadii[2] * absRot[0][0];
+	r1 = obb1.getRadii()[1] * absRot[2][1] + obb1.getRadii()[2] * absRot[1][1];
+	r2 = obb2.getRadii()[0] * absRot[0][2] + obb2.getRadii()[2] * absRot[0][0];
 	if (abs(t[2] * rot[1][1] - t[1] * rot[2][1]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[0] x 2[2]
-	r1 = obb1.getRadii[1] * absRot[2][2] + obb1.getRadii[2] * absRot[1][2];
-	r2 = obb2.getRadii[0] * absRot[0][1] + obb2.getRadii[1] * absRot[0][0];
+	r1 = obb1.getRadii()[1] * absRot[2][2] + obb1.getRadii()[2] * absRot[1][2];
+	r2 = obb2.getRadii()[0] * absRot[0][1] + obb2.getRadii()[1] * absRot[0][0];
 	if (abs(t[2] * rot[1][2] - t[1] * rot[2][2]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[1] x 2[0]
-	r1 = obb1.getRadii[0] * absRot[2][0] + obb1.getRadii[2] * absRot[0][0];
-	r2 = obb2.getRadii[1] * absRot[1][2] + obb2.getRadii[2] * absRot[1][1];
+	r1 = obb1.getRadii()[0] * absRot[2][0] + obb1.getRadii()[2] * absRot[0][0];
+	r2 = obb2.getRadii()[1] * absRot[1][2] + obb2.getRadii()[2] * absRot[1][1];
 	if (abs(t[0] * rot[2][0] - t[2] * rot[0][0]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[1] x 2[1]
-	r1 = obb1.getRadii[0] * absRot[2][1] + obb1.getRadii[2] * absRot[0][1];
-	r2 = obb2.getRadii[0] * absRot[1][2] + obb2.getRadii[2] * absRot[1][0];
+	r1 = obb1.getRadii()[0] * absRot[2][1] + obb1.getRadii()[2] * absRot[0][1];
+	r2 = obb2.getRadii()[0] * absRot[1][2] + obb2.getRadii()[2] * absRot[1][0];
 	if (abs(t[0] * rot[2][1] - t[2] * rot[0][1]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[1] x 2[2]
-	r1 = obb1.getRadii[0] * absRot[2][2] + obb1.getRadii[2] * absRot[0][2];
-	r2 = obb2.getRadii[0] * absRot[1][1] + obb2.getRadii[1] * absRot[1][0];
+	r1 = obb1.getRadii()[0] * absRot[2][2] + obb1.getRadii()[2] * absRot[0][2];
+	r2 = obb2.getRadii()[0] * absRot[1][1] + obb2.getRadii()[1] * absRot[1][0];
 	if (abs(t[0] * rot[2][2] - t[2] * rot[0][2]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[2] x 2[0]
-	r1 = obb1.getRadii[0] * absRot[1][0] + obb1.getRadii[1] * absRot[0][0];
-	r2 = obb2.getRadii[1] * absRot[2][2] + obb2.getRadii[2] * absRot[2][1];
+	r1 = obb1.getRadii()[0] * absRot[1][0] + obb1.getRadii()[1] * absRot[0][0];
+	r2 = obb2.getRadii()[1] * absRot[2][2] + obb2.getRadii()[2] * absRot[2][1];
 	if (abs(t[1] * rot[0][0] - t[0] * rot[1][0]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[2] x 2[1]
-	r1 = obb1.getRadii[0] * absRot[1][1] + obb1.getRadii[1] * absRot[0][1];
-	r2 = obb2.getRadii[0] * absRot[2][2] + obb2.getRadii[2] * absRot[2][0];
+	r1 = obb1.getRadii()[0] * absRot[1][1] + obb1.getRadii()[1] * absRot[0][1];
+	r2 = obb2.getRadii()[0] * absRot[2][2] + obb2.getRadii()[2] * absRot[2][0];
 	if (abs(t[1] * rot[0][1] - t[0] * rot[1][1]) > (r1 + r2)) { return false; }
 	// Test axis L = 1[2] x 2[2]
-	r1 = obb1.getRadii[0] * absRot[1][2] + obb1.getRadii[1] * absRot[0][2];
-	r2 = obb2.getRadii[0] * absRot[2][1] + obb2.getRadii[1] * absRot[2][0];
+	r1 = obb1.getRadii()[0] * absRot[1][2] + obb1.getRadii()[1] * absRot[0][2];
+	r2 = obb2.getRadii()[0] * absRot[2][1] + obb2.getRadii()[1] * absRot[2][0];
 	if (abs(t[1] * rot[0][2] - t[0] * rot[1][2]) > (r1 + r2)) { return false; }
 	// If all tests failed
 	return true;
@@ -182,18 +182,18 @@ int main()
 	rb2.getMesh().setShader(rbShader);
 	//rb1.setBoxInvInertia();
 	rb2.setMass(1.0f);
-	rb2.translate(glm::vec3(0.0f, 3.0f, 0.0f));
-	rb2.setVel(glm::vec3(0.0f, 0.0f, 0.0f));
+	rb2.translate(glm::vec3(-5.0f, 3.0f, 0.0f));
+	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 	rb2.setColl(Obb::Obb());
 
 	Particle p1 = Particle::Particle();
 	p1.setMesh(Mesh::Mesh(Mesh::MeshType::TRIANGLE));
-	p1.translate(glm::vec3(-1.0f, 3.0f, 0.0f));
+	p1.translate(glm::vec3(-1.0f, 3.0f, -3.0f));
 	p1.getMesh().setShader(rbShader);
 	Particle p2 = Particle::Particle();
 	p2.setMesh(Mesh::Mesh(Mesh::MeshType::TRIANGLE));
-	p2.translate(glm::vec3(1.0f, 3.0f, 0.0f));
+	p2.translate(glm::vec3(1.0f, 3.0f, -3.0f));
 	p2.getMesh().setShader(rbShader);
 
 	// time
@@ -229,7 +229,16 @@ int main()
 				integrateRot(rb2, dt);
 
 				// check collisions
-
+				if (checkCollision(rb1.getColl(), rb2.getColl())) {
+					p1.setPos(glm::vec3(0.0f, 5.0f, -3.0f));
+					std::cout << "H" << std::endl;
+					app.pauseSimulation = true;
+				}
+				else
+				{
+					p1.setPos(glm::vec3(-1.0f, 3.0f, -3.0f));
+					std::cout << "" << std::endl;
+				}
 
 			}
 			timeAccumulator -= dt;
