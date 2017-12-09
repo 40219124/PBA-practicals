@@ -59,27 +59,19 @@ bool checkCollision(Obb &obb1, Obb &obb2) {
 	float r1, r2;
 	glm::mat3 rot, absRot;
 	float error = 0.00001f;
-
-	// Projection of 2's axes onto 1's axes
-	for (int i = 0; i < 3; ++i) {
-		for (int j = 0; j < 3; ++j) {
-			rot[i][j] = glm::dot(obb1.getAxes()[i], obb2.getAxes()[j]);
-		}
-	}
 	// Difference between two centres
 	glm::vec3 t = obb2.getPos() - obb1.getPos();
 	// t in 1's space (coordinate frame)
 	t = glm::vec3(glm::dot(t, obb1.getAxes()[0]), glm::dot(t, obb1.getAxes()[1]), glm::dot(t, obb1.getAxes()[2]));
 
-	// Compute common subexpressions
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
+			// Projection of 2's axes onto 1's axes
+			rot[i][j] = glm::dot(obb1.getAxes()[i], obb2.getAxes()[j]);
+			// Compute common subexpressions
 			absRot[i][j] = abs(rot[i][j]) + error;
 		}
-	}
-
-	// Test axes L = 1[0], L = 1[1], L = 1[2]
-	for (int i = 0; i < 3; ++i) {
+		// Test axes L = 1[0], L = 1[1], L = 1[2]
 		r1 = obb1.getRadii()[i];
 		r2 = obb2.getRadii()[0] * absRot[i][0] + obb2.getRadii()[1] * absRot[i][1] + obb2.getRadii()[2] * absRot[i][2];
 		if (abs(t[i]) > (r1 + r2)) { return false; }
