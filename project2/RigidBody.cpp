@@ -6,7 +6,7 @@ RigidBody::~RigidBody() {}
 
 void RigidBody::setMass(float mass) {
 	Body::setMass(mass);
-	m_invInertia = glm::inverse(calcIT());
+	m_invInertia = calcIT();
 }
 
 void RigidBody::scale(glm::vec3 scale) {
@@ -14,7 +14,7 @@ void RigidBody::scale(glm::vec3 scale) {
 	for (int i = 0; i < 3; ++i) {
 		m_dimensions[i] *= scale[i];
 	}
-	m_invInertia = glm::inverse(calcIT());
+	m_invInertia = calcIT();
 }
 
 glm::mat3 RigidBody::calcIT() {
@@ -23,5 +23,5 @@ glm::mat3 RigidBody::calcIT() {
 	it[0][0] = (powf(m_dimensions[1], 2.0f) + powf(m_dimensions[2], 2.0f)) * mass12;
 	it[1][1] = (powf(m_dimensions[0], 2.0f) + powf(m_dimensions[2], 2.0f)) * mass12;
 	it[2][2] = (powf(m_dimensions[0], 2.0f) + powf(m_dimensions[1], 2.0f)) * mass12;
-	return it;
+	return glm::inverse(it);
 }

@@ -1352,7 +1352,7 @@ void FrictionDemo() {
 	glm::vec3 aGravity = glm::vec3(0.0f, -9.8f, 0.0f);
 	Gravity grav = Gravity::Gravity(aGravity);
 
-	Shader shader = Shader("resources/shader/core.vert", "resources/shaders/core_green.frag");
+	Shader shader = Shader("resources/shaders/core.vert", "resources/shaders/core_green.frag");
 
 	RigidBody cube = RigidBody();
 	Mesh cMesh = Mesh::Mesh(Mesh::CUBE);

@@ -15,7 +15,3 @@ Obb::Obb()
 Obb::~Obb()
 {
 }
-
-void Obb::rotate(const float &angle, const glm::vec3 &vect) {
-	m_axes = glm::rotate(glm::mat4(m_axes), angle, vect);
-}

@@ -55,73 +55,12 @@ void integrateRot(RigidBody &rb, float dt) {
 	rb.setRotate(glm::mat4(R));
 }
 
-bool checkCollision(Obb &obb1, Obb &obb2) {
-	float r1, r2;
-	glm::mat3 rot, absRot;
-	float error = 0.00001f;
-	// Difference between two centres
-	glm::vec3 t = obb2.getPos() - obb1.getPos();
-	// t in 1's space (coordinate frame)
-	t = glm::vec3(glm::dot(t, obb1.getAxes()[0]), glm::dot(t, obb1.getAxes()[1]), glm::dot(t, obb1.getAxes()[2]));
-
-	for (int i = 0; i < 3; ++i) {
-		for (int j = 0; j < 3; ++j) {
-			// Projection of 2's axes onto 1's axes
-			rot[i][j] = glm::dot(obb1.getAxes()[i], obb2.getAxes()[j]);
-			// Compute common subexpressions
-			absRot[i][j] = abs(rot[i][j]) + error;
-		}
-		// Test axes L = 1[0], L = 1[1], L = 1[2]
-		r1 = obb1.getRadii()[i];
-		r2 = obb2.getRadii()[0] * absRot[i][0] + obb2.getRadii()[1] * absRot[i][1] + obb2.getRadii()[2] * absRot[i][2];
-		if (abs(t[i]) > (r1 + r2)) { return false; }
-	}
-	// Test axes L = 2[0], L = 2[1], L = 2[2]
-	for (int i = 0; i < 3; ++i) {
-		r1 = obb1.getRadii()[0] * absRot[0][i] + obb1.getRadii()[1] * absRot[1][i] + obb1.getRadii()[2] * absRot[2][i];
-		r2 = obb2.getRadii()[i];
-		if (abs(t[0] * rot[0][i] + t[1] * rot[1][i] + t[2] * rot[2][i]) > (r1 + r2)) { return false; }
-	}
-	// Test axis L = 1[0] x 2[0]
-	r1 = obb1.getRadii()[1] * absRot[2][0] + obb1.getRadii()[2] * absRot[1][0];
-	r2 = obb2.getRadii()[1] * absRot[0][2] + obb2.getRadii()[2] * absRot[0][1];
-	if (abs(t[2] * rot[1][0] - t[1] * rot[2][0]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[0] x 2[1]
-	r1 = obb1.getRadii()[1] * absRot[2][1] + obb1.getRadii()[2] * absRot[1][1];
-	r2 = obb2.getRadii()[0] * absRot[0][2] + obb2.getRadii()[2] * absRot[0][0];
-	if (abs(t[2] * rot[1][1] - t[1] * rot[2][1]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[0] x 2[2]
-	r1 = obb1.getRadii()[1] * absRot[2][2] + obb1.getRadii()[2] * absRot[1][2];
-	r2 = obb2.getRadii()[0] * absRot[0][1] + obb2.getRadii()[1] * absRot[0][0];
-	if (abs(t[2] * rot[1][2] - t[1] * rot[2][2]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[1] x 2[0]
-	r1 = obb1.getRadii()[0] * absRot[2][0] + obb1.getRadii()[2] * absRot[0][0];
-	r2 = obb2.getRadii()[1] * absRot[1][2] + obb2.getRadii()[2] * absRot[1][1];
-	if (abs(t[0] * rot[2][0] - t[2] * rot[0][0]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[1] x 2[1]
-	r1 = obb1.getRadii()[0] * absRot[2][1] + obb1.getRadii()[2] * absRot[0][1];
-	r2 = obb2.getRadii()[0] * absRot[1][2] + obb2.getRadii()[2] * absRot[1][0];
-	if (abs(t[0] * rot[2][1] - t[2] * rot[0][1]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[1] x 2[2]
-	r1 = obb1.getRadii()[0] * absRot[2][2] + obb1.getRadii()[2] * absRot[0][2];
-	r2 = obb2.getRadii()[0] * absRot[1][1] + obb2.getRadii()[1] * absRot[1][0];
-	if (abs(t[0] * rot[2][2] - t[2] * rot[0][2]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[2] x 2[0]
-	r1 = obb1.getRadii()[0] * absRot[1][0] + obb1.getRadii()[1] * absRot[0][0];
-	r2 = obb2.getRadii()[1] * absRot[2][2] + obb2.getRadii()[2] * absRot[2][1];
-	if (abs(t[1] * rot[0][0] - t[0] * rot[1][0]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[2] x 2[1]
-	r1 = obb1.getRadii()[0] * absRot[1][1] + obb1.getRadii()[1] * absRot[0][1];
-	r2 = obb2.getRadii()[0] * absRot[2][2] + obb2.getRadii()[2] * absRot[2][0];
-	if (abs(t[1] * rot[0][1] - t[0] * rot[1][1]) > (r1 + r2)) { return false; }
-	// Test axis L = 1[2] x 2[2]
-	r1 = obb1.getRadii()[0] * absRot[1][2] + obb1.getRadii()[1] * absRot[0][2];
-	r2 = obb2.getRadii()[0] * absRot[2][1] + obb2.getRadii()[1] * absRot[2][0];
-	if (abs(t[1] * rot[0][2] - t[0] * rot[1][2]) > (r1 + r2)) { return false; }
-	// If all tests failed
-	return true;
+void ApplyImpulse(RigidBody &rb, const glm::vec3 &impLoc, const glm::vec3 &impDir) {
+	glm::vec3 deltaV = impDir / rb.getMass();
+	glm::vec3 deltaW = rb.getInvInertia() * (glm::cross(impLoc, impDir));
+	rb.setVel(rb.getVel() + deltaV);
+	rb.setAngVel(rb.getAngVel() + deltaW);
 }
-
 
 // main function
 int main()
@@ -179,14 +118,17 @@ int main()
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 	rb2.setColl(Obb::Obb());
 
+	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 	Particle p1 = Particle::Particle();
 	p1.setMesh(Mesh::Mesh(Mesh::MeshType::TRIANGLE));
 	p1.translate(glm::vec3(-1.0f, 3.0f, -3.0f));
-	p1.getMesh().setShader(rbShader);
+	p1.getMesh().setShader(pShader);
+	p1.scale(glm::vec3(0.25f));
 	Particle p2 = Particle::Particle();
 	p2.setMesh(Mesh::Mesh(Mesh::MeshType::TRIANGLE));
 	p2.translate(glm::vec3(1.0f, 3.0f, -3.0f));
-	p2.getMesh().setShader(rbShader);
+	p2.getMesh().setShader(pShader);
+	p2.scale(glm::vec3(0.25f));
 
 	// time
 	float currentTime = (float)glfwGetTime();
@@ -221,7 +163,7 @@ int main()
 				integrateRot(rb2, dt);
 
 				// check collisions
-				if (checkCollision(rb1.getColl(), rb2.getColl())) {
+				/*if (checkCollision(rb1.getColl(), rb2.getColl())) {
 					p1.setPos(glm::vec3(0.0f, 5.0f, -3.0f));
 					std::cout << "H" << std::endl;
 					app.pauseSimulation = true;
@@ -230,6 +172,27 @@ int main()
 				{
 					p1.setPos(glm::vec3(-1.0f, 3.0f, -3.0f));
 					std::cout << "" << std::endl;
+				}*/
+
+				// check collisions
+				/*if (rb1.getColl().testCollision(rb2.getColl())) {
+					p1.setPos(glm::vec3(0.0f, 5.0f, -3.0f));
+					std::cout << "H" << std::endl;
+					app.pauseSimulation = true;
+				}
+				else
+				{
+					p1.setPos(glm::vec3(-1.0f, 3.0f, -3.0f));
+					std::cout << "" << std::endl;
+				}*/
+				glm::vec3 collP = glm::vec3(0.0f);
+				glm::vec3 collN = glm::vec3(0.0f);
+				bool flag = rb1.getColl().testCollision(rb2.getColl(), collP, collN);
+				if (flag) {
+					p1.setPos(collP);
+					ApplyImpulse(rb1, collP, -collN/100.0f);
+					ApplyImpulse(rb2, collP, collN/100.0f);
+					//app.pauseSimulation = true;
 				}
 
 			}
