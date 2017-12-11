@@ -29,12 +29,12 @@ public:
 
 	void rotate(const float &angle, const glm::vec3 &vect);
 
-	bool testCollision(Collider b, glm::vec3 &out, glm::vec3 &normOut);
+	bool testCollision(Collider b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
 
 protected:
 	void getClosestPtPointObb(glm::vec3 p, glm::vec3 &out);
 
-	bool findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOut);
+	bool findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
 
 	bool testOBBOBB(Collider b);
 	bool testOBBPlane(Collider b);

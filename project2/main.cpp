@@ -30,7 +30,7 @@
 // time
 float t = 0.0f;
 const float dt = 0.01f;
-float timeMultiplier = 2.0f; // controls the speed of the simulation
+float timeMultiplier = 0.3f; // controls the speed of the simulation
 
 // forces
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
@@ -88,9 +88,9 @@ int main()
 	rb1.getMesh().setShader(rbShader);
 	//rb1.setBoxInvInertia();
 	rb1.setMass(1.0f);
-	rb1.translate(glm::vec3(5.0f, 3.0f, 0.0f));
-	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
-	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
+	rb1.translate(glm::vec3(5.0f, 3.0f, 0.2f));
+	rb1.setVel(glm::vec3(-5.0f, 0.0f, 0.0f));
+	//rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 	rb1.setColl(Obb::Obb());
 
 	// create cube2
@@ -101,8 +101,8 @@ int main()
 	rb2.getMesh().setShader(rbShader);
 	//rb1.setBoxInvInertia();
 	rb2.setMass(1.0f);
-	rb2.translate(glm::vec3(-5.0f, 3.0f, 0.0f));
-	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
+	rb2.translate(glm::vec3(-5.0f, 3.2f, 0.0f));
+	rb2.setVel(glm::vec3(5.0f, 0.0f, 0.0f));
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 	rb2.setColl(Obb::Obb());
 
@@ -175,7 +175,8 @@ int main()
 				}*/
 				glm::vec3 collP = glm::vec3(0.0f);
 				glm::vec3 collN = glm::vec3(0.0f);
-				bool flag = rb1.getColl().testCollision(rb2.getColl(), collP, collN);
+				float halfPen = 0.0f;
+				bool flag = rb1.getColl().testCollision(rb2.getColl(), collP, collN, halfPen);
 				if (flag) {
 					p1.setPos(collP);
 					// Collision response time
@@ -210,7 +211,8 @@ int main()
 					// Apply new forces
 					for (int i = 0; i < 2; i++) {
 						// Revert some movement
-						rbs[i]->translate(rbs[i]->getVel() * (-dt) / 2.0f);
+						glm::vec3 trans = (i == (glm::dot(collP - rb1.getPos(), collN) > 0 ? 0 : 1) ? -halfPen : halfPen) * collN;
+						rbs[i]->translate(trans);
 						// Set new velocities
 						rbs[i]->setVel(rbs[i]->getVel() - (j * oneOverM[i]) * collN);
 						rbs[i]->setAngVel(rbs[i]->getAngVel() - j*inT[i] * glm::cross(cToP[i], collN));
