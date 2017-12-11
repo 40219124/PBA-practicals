@@ -101,7 +101,7 @@ int main()
 	//rb1.setBoxInvInertia();
 	rb1.setMass(1.0f);
 	rb1.translate(glm::vec3(5.0f, 3.0f, 0.0f));
-	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
+	rb1.setVel(glm::vec3(-5.0f, 0.0f, 0.0f));
 	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 	rb1.setColl(Obb::Obb());
 
@@ -114,7 +114,7 @@ int main()
 	//rb1.setBoxInvInertia();
 	rb2.setMass(1.0f);
 	rb2.translate(glm::vec3(-5.0f, 3.0f, 0.0f));
-	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
+	rb2.setVel(glm::vec3(5.0f, 0.0f, 0.0f));
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 	rb2.setColl(Obb::Obb());
 
@@ -190,8 +190,46 @@ int main()
 				bool flag = rb1.getColl().testCollision(rb2.getColl(), collP, collN);
 				if (flag) {
 					p1.setPos(collP);
-					ApplyImpulse(rb1, collP, -collN/100.0f);
-					ApplyImpulse(rb2, collP, collN/100.0f);
+					// Collision response time
+					RigidBody* rbs[2];
+					// Allocate rigid bodies based on face collision
+					if (glm::dot(collP - rb1.getPos(), collN) > 0) {
+						rbs[0] = &rb1;
+						rbs[1] = &rb2;
+					}
+					else {
+						rbs[1] = &rb1;
+						rbs[0] = &rb2;
+					}
+					// Set up loop variables
+					glm::vec3 cToP[2];
+					glm::vec3 vAtP[2];
+					float oneOverM[2];
+					glm::mat3 inT[2];
+					float deBit[2];
+					// Get variables from different rb's
+					for (int i = 0; i < 2; i++) {
+						cToP[i] = collP - rbs[i]->getPos();
+						vAtP[i] = rbs[i]->getVel() + glm::cross(rbs[i]->getAngVel(), cToP[i]);
+						oneOverM[i] = 1.0f / rbs[i]->getMass();
+						inT[i] = rbs[i]->getInvInertia();
+						deBit[i] = glm::dot(collN, glm::cross(inT[i] * glm::cross(cToP[i], collN), cToP[i]));
+					}
+					// Compute j
+					float numer = -(1.0f + 0.6f) * glm::dot(vAtP[1] - vAtP[0], collN);
+					float denom = oneOverM[0] + oneOverM[1] + deBit[0] + deBit[1];
+					float j = numer / denom;
+					// Apply new forces
+					for (int i = 0; i < 2; i++) {
+						// Revert some movement
+						rbs[i]->translate(rbs[i]->getVel() * (-dt) / 2.0f);
+						// Set new velocities
+						rbs[i]->setVel(rbs[i]->getVel() - (j * oneOverM[i]) * collN);
+						rbs[i]->setAngVel(rbs[i]->getAngVel() - j*inT[i] * glm::cross(cToP[i], collN));
+						j *= -1;
+					}
+
+
 					//app.pauseSimulation = true;
 				}
 
