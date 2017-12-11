@@ -80,18 +80,6 @@ int main()
 	// rigid body set up
 	RigidBody rb1 = RigidBody();
 
-	// create sphere from obj
-	//Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
-
-	// create cube from obj
-	//Mesh m1 = Mesh::Mesh("resources/models/cube1.obj");
-
-	// load triangle
-	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
-
-	// load quad
-	//Mesh m1 = Mesh::Mesh(Mesh::QUAD);
-
 	// create cube
 	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
 
@@ -101,7 +89,7 @@ int main()
 	//rb1.setBoxInvInertia();
 	rb1.setMass(1.0f);
 	rb1.translate(glm::vec3(5.0f, 3.0f, 0.0f));
-	rb1.setVel(glm::vec3(-5.0f, 0.0f, 0.0f));
+	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
 	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 	rb1.setColl(Obb::Obb());
 
@@ -114,7 +102,7 @@ int main()
 	//rb1.setBoxInvInertia();
 	rb2.setMass(1.0f);
 	rb2.translate(glm::vec3(-5.0f, 3.0f, 0.0f));
-	rb2.setVel(glm::vec3(5.0f, 0.0f, 0.0f));
+	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 	rb2.setColl(Obb::Obb());
 

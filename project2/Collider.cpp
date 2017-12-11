@@ -50,6 +50,8 @@ void Collider::getClosestPtPointObb(glm::vec3 p, glm::vec3 &out) {
 	}
 }
 
+
+
 bool Collider::findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOut) {
 	// If there is no collision return
 	if (!this->testOBBOBB(b)) {
@@ -63,38 +65,77 @@ bool Collider::findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOu
 	int faceShape = 0;
 	// Put colliders into an array for loop stuff
 	Collider* colls[2] = { this, &b };
+	glm::vec3 vertsA[8];
+	glm::vec3 vertsB[8];
 	// Place for collider array loop stuff
 	for (int flip = 0; flip < 2; ++flip) {
-		// Calculate what the closest point are (inefficiently)
+		int vi = 0;
+		// Calculate what the vertices are
 		for (int i = -1; i < 2; i += 2) {
 			for (int j = -1; j < 2; j += 2) {
 				for (int k = -1; k < 2; k += 2) {
-					// Calculate vertex of other Obb
-					glm::vec3 p = glm::vec3(colls[1]->getPos());
-					p += colls[1]->getAxes()[0] * i * colls[1]->getRadii()[0];
-					p += colls[1]->getAxes()[1] * j * colls[1]->getRadii()[1];
-					p += colls[1]->getAxes()[2] * k * colls[1]->getRadii()[2];
-					// Create test vertex
-					glm::vec3 test = glm::vec3(0.0f);
-					// Find closest point on this Obb to p
-					colls[0]->getClosestPtPointObb(p, test);
-					// Find difference between this obb and p
-					glm::vec3 vec = p - test;
-					// Get length of difference squared
-					float dtest = glm::dot(vec, vec);
-					// if multiple contact places
-					float error = 0.0001;
-					if (abs(dist - dtest) < error) {
-						count++;
-						total += test;
+					// Calculate vertex of Obb
+					glm::vec3 p = glm::vec3(colls[flip]->getPos());
+					p += colls[flip]->getAxes()[0] * i * colls[flip]->getRadii()[0];
+					p += colls[flip]->getAxes()[1] * j * colls[flip]->getRadii()[1];
+					p += colls[flip]->getAxes()[2] * k * colls[flip]->getRadii()[2];
+					if (flip == 0) {
+						vertsA[vi] = p;
 					}
-					// If the length is shorter than other tested lengths keep it and point
-					if (dtest < dist - error) {
-						dist = dtest;
-						count = 1;
-						total = test;
-						faceShape = (flip + 1) % 2;
+					else {
+						vertsB[vi] = p;
 					}
+					vi++;
+				}
+			}
+		}
+	}
+	// Index trackers of vertex locations
+	int aCount = 0;
+	int inA[8];
+	int bCount = 0;
+	int inB[8];
+	/*int outA[8];
+	int outB[8];*/
+	for (int flip = 0; flip < 2; flip++) {
+		for (int i = 0; i < 8; i++) {
+			glm::vec3 vert;
+			if (flip == 0) {
+				vert = vertsA[i];
+			}
+			else {
+				vert = vertsB[i];
+			}
+			// Create test vertex
+			glm::vec3 test = glm::vec3(0.0f);
+			// Find closest point on this Obb to p
+			colls[(flip + 1) % 2]->getClosestPtPointObb(vert, test);
+			// Find difference between this obb and p
+			glm::vec3 vec = vert - test;
+			// Get length of difference squared
+			float dtest = glm::dot(vec, vec);
+			// if multiple contact places
+			float error = 0.0001;
+			if (abs(dist - dtest) < error) {
+				count++;
+				total += test;
+			}
+			// If the length is shorter than other tested lengths keep it and point
+			else if (dtest < dist - error) {
+				dist = dtest;
+				count = 1;
+				total = test;
+				faceShape = (flip + 1) % 2;
+			}
+			// If vertex inside OBB, record index
+			if (dtest < error) {
+				if (flip == 0) {
+					inA[aCount] = i;
+					aCount++;
+				}
+				else {
+					inB[bCount] = i;
+					bCount++;
 				}
 			}
 		}
