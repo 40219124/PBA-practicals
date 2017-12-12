@@ -167,7 +167,16 @@ int main()
 	rb3.setColl(Obb::Obb());
 
 	if (true) {
-
+		Gravity grav = Gravity::Gravity(rb1.getMass() * glm::vec3(0.0f, -9.8f, 0.0f));
+		rb1.setVel(glm::vec3(0.0f));
+		rb1.setAngVel(glm::vec3(0.0f));
+		rb1.addForce(&grav);
+		rb2.setVel(glm::vec3(0.0f));
+		rb2.setAngVel(glm::vec3(0.0f));
+		rb2.addForce(&grav);
+		rb3.setVel(glm::vec3(0.0f));
+		rb3.setAngVel(glm::vec3(0.0f));
+		rb3.addForce(&grav);
 	}
 
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
@@ -225,6 +234,9 @@ int main()
 				ApplyCollision(rb1, rb2, p1);
 				ApplyCollision(rb1, rb3, p2);
 				ApplyCollision(rb2, rb3, p3);
+				ApplyCollision(rb1, rbPlane, p1);
+				ApplyCollision(rb2, rbPlane, p2);
+				ApplyCollision(rb3, rbPlane, p3);
 
 
 
