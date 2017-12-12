@@ -23,6 +23,9 @@ void Body::rotate(float angle, const glm::vec3 &vect) {
 
 void Body::scale(const glm::vec3 &vect) {
 	m_mesh.scale(vect);
+	for (int i = 0; i < 3; ++i) {
+		m_coll.setRadii(i, m_coll.getRadii()[i] * vect[i]);
+	}
 }
 
 glm::vec3 Body::applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float deltaTime) {

@@ -166,7 +166,6 @@ bool Collider::findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normO
 
 	glm::vec3 avgA = closestPointsToObb(b, vertsA, inA);
 	glm::vec3 avgB = closestPointsToObb(*this, vertsB, inB);
-
 	/*
 	* Find the axis along which each obb penetrated the other the least
 	*/
@@ -183,7 +182,6 @@ bool Collider::findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normO
 			}
 		}
 	}
-
 	int indexB = -1;
 	float lowB = INFINITY;
 	if (inB.size() > 0) {
@@ -347,7 +345,7 @@ bool Collider::findCollPointPlaneOBB(Collider &b, glm::vec3 &out, glm::vec3 &nor
 		if (glm::dot(vec, normOut) > 0) {
 			vec *= -1.0f;
 		}
-		else if (abs(glm::dot(vec, normOut)) < 0.01) {
+		else if (abs(glm::dot(vec, normOut)) < 0.0001) {
 			vec *= 0.0f;
 		}
 		out += vec;

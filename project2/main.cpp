@@ -30,7 +30,7 @@
 // time
 float t = 0.0f;
 const float dt = 0.01f;
-float timeMultiplier = 1.6f; // controls the speed of the simulation
+float timeMultiplier = 0.86f; // controls the speed of the simulation
 
 // forces
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
@@ -68,7 +68,10 @@ void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {
 	float halfPen = 0.0f;
 	bool flag = fix.getColl().testCollision(mov.getColl(), collP, collN, halfPen);
 	if (flag) {
-		collP += collN * halfPen;
+		// Revert some movement
+		glm::vec3 trans = halfPen * 2.0f * collN;
+		mov.translate(trans);
+		collP += halfPen * 2.0f * collN;
 		p1.setPos(collP);
 		// Set up loop variables
 		glm::vec3 cToP = collP - mov.getPos();
@@ -77,16 +80,12 @@ void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {
 		glm::mat3 inT = mov.getInvInertia();
 		float deBit = glm::dot(collN, glm::cross(inT * glm::cross(cToP, collN), cToP));
 		// Compute j
-		float numer = -(1.0f + 0.6f) * glm::dot(vAtP, collN);
+		float numer = -(1.0f + mov.getCor()) * glm::dot(vAtP, collN);
 		float denom = oneOverM + deBit;
 		float j = numer / denom;
-		// Revert some movement
-		glm::vec3 trans = halfPen * 2.0f * collN;
-		mov.translate(trans);
 		// Set new velocities
-		mov.setVel(mov.getVel() - (j * oneOverM) * collN);
-		mov.setAngVel(mov.getAngVel() - j * inT * glm::cross(cToP, collN));
-		j *= -1;
+		mov.setVel(mov.getVel() + (j * oneOverM) * collN);
+		mov.setAngVel(mov.getAngVel() + j * inT * glm::cross(cToP, collN));
 	}
 }
 
@@ -171,53 +170,88 @@ int main()
 	rbPlane.setMesh(plane);
 	rbPlane.setMass(100000000000.0f);
 	rbPlane.setColl(Plane::Plane());
+	rbPlane.setFixed(true);
 
 	// create cube
 	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
 	// rigid body set up
 	RigidBody rb1 = RigidBody();
 	rb1.setMesh(m1);
+	rb1.setColl(Obb::Obb());
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
 	rb1.getMesh().setShader(rbShader);
 	rb1.setMass(1.0f);
-	rb1.translate(glm::vec3(5.0f, 30.0f, 0.2f));
-	rb1.setVel(glm::vec3(-2.0f, 0.0f, 0.0f));
+	rb1.translate(glm::vec3(5.0f, 3.0f, 0.2f));
+	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
 	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
-	rb1.setColl(Obb::Obb());
+	rb1.setCor(0.6f);
+	rb1.scale(glm::vec3(0.2f, 1.0f, 0.4f));
 
 	// create rb2
 	Mesh m2 = Mesh::Mesh(Mesh::CUBE);
 	RigidBody rb2 = RigidBody();
 	rb2.setMesh(m2);
+	rb2.setColl(Obb::Obb());
 	rb2.getMesh().setShader(rbShader);
 	rb2.setMass(1.0f);
-	rb2.translate(glm::vec3(-5.0f, 30.2f, 0.0f));
+	rb2.translate(glm::vec3(-5.0f, 3.2f, 0.0f));
 	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
-	rb2.setColl(Obb::Obb());
+	rb2.setCor(0.6f);
+	rb2.scale(glm::vec3(0.2f, 1.0f, 0.4f));
 
 	// create rb3
 	Mesh m3 = Mesh::Mesh(Mesh::CUBE);
 	RigidBody rb3 = RigidBody();
 	rb3.setMesh(m3);
+	rb3.setColl(Obb::Obb());
 	rb3.getMesh().setShader(rbShader);
 	rb3.setMass(1.0f);
-	rb3.translate(glm::vec3(-15.0f, 30.3f, 0.0f));
+	rb3.translate(glm::vec3(-15.0f, 3.3f, 0.0f));
 	rb3.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
 	rb3.setAngVel(glm::vec3(0.2f, -0.6f, 0.4f));
-	rb3.setColl(Obb::Obb());
+	rb3.setCor(0.6f);
+	rb3.scale(glm::vec3(0.2f, 1.0f, 0.4f));
+
+	std::vector<RigidBody> dominos;
+	int domI = 30;
+	float rad = 10.0f;
+	for (int i = 0; i < domI; ++i) {
+		Mesh meh = Mesh::Mesh(Mesh::CUBE);
+		RigidBody rib = RigidBody();
+		rib.setMesh(m3);
+		rib.setColl(Obb::Obb());
+		rib.getMesh().setShader(rbShader);
+		rib.setMass(1.0f);
+		//rib.translate(glm::vec3(0.7 * (-domI) + i * 0.7f, 1.1f, 0.0f + i * 0.1f));
+		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / domI), 2.0f * rad + rad * sin(M_PI * i * 2.0f/ domI), 0.0f + i * 0.1f));
+		rib.setVel(glm::vec3(0.0f));
+		rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.1f));
+		rib.setCor(0.6f);
+		rib.scale(glm::vec3(0.2f, 1.0f, 0.4f));
+		rib.addForce(new Gravity(glm::vec3(0.0f, -9.8f, 0.0f)));
+		dominos.push_back(rib);
+	}
 
 	Gravity grav = Gravity::Gravity(rb1.getMass() * glm::vec3(0.0f, -9.8f, 0.0f));
-	if (true) {
+	if (false) {
 		rb1.addForce(&grav);
+		rb1.translate(glm::vec3(0.0f, 30.0f, 0.0f));
 		rb2.addForce(&grav);
+		rb2.translate(glm::vec3(0.0f, 30.0f, 0.0f));
 		rb3.addForce(&grav);
-		if (false) {
+		rb3.translate(glm::vec3(0.0f, 30.0f, 0.0f));
+		if (true) {
 			rb1.setVel(glm::vec3(0.0f));
-			rb1.setAngVel(glm::vec3(0.0f));
+			rb1.setCor(1.0f);
 			rb2.setVel(glm::vec3(0.0f));
-			rb2.setAngVel(glm::vec3(0.0f));
+			rb2.setCor(1.0f);
 			rb3.setVel(glm::vec3(0.0f));
+			rb3.setCor(1.0f);
+		}
+		if (false) {
+			rb1.setAngVel(glm::vec3(0.0f));
+			rb2.setAngVel(glm::vec3(0.0f));
 			rb3.setAngVel(glm::vec3(0.0f));
 		}
 	}
@@ -267,11 +301,17 @@ int main()
 				integratePos(rb1, t, dt);
 				integratePos(rb2, t, dt);
 				integratePos(rb3, t, dt);
+				for (int i = 0; i < dominos.size(); ++i) {
+					integratePos(dominos[i], t, dt);
+				}
 
 				// integration (rotation)
 				integrateRot(rb1, dt);
 				integrateRot(rb2, dt);
 				integrateRot(rb3, dt);
+				for (int i = 0; i < dominos.size(); ++i) {
+					integrateRot(dominos[i], dt);
+				}
 
 
 				ApplyCollision(rb1, rb2, p1);
@@ -280,6 +320,12 @@ int main()
 				ApplyCollision(rb1, rbPlane, p1);
 				ApplyCollision(rb2, rbPlane, p2);
 				ApplyCollision(rb3, rbPlane, p3);
+				for (int i = 0; i < dominos.size() - 1; ++i) {
+					for (int j = i + 1; j < dominos.size(); ++j) {
+						ApplyCollision(dominos[i], dominos[j], p1);
+					}
+					ApplyCollision(dominos[i], rbPlane, p1);
+				}
 
 
 
@@ -304,6 +350,9 @@ int main()
 		app.draw(p1.getMesh());
 		app.draw(p2.getMesh());
 		app.draw(p3.getMesh());
+		for (int i = 0; i < dominos.size() - 1; ++i) {
+			app.draw(dominos[i].getMesh());
+		}
 
 		app.display();
 	}
