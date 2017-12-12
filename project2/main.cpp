@@ -17,7 +17,6 @@
 #include <glm/gtx/orthonormalize.hpp>
 #include "glm/ext.hpp"
 
-
 // project includes
 #include "Application.h"
 #include "Shader.h"
@@ -25,7 +24,6 @@
 #include "Particle.h"
 #include "RigidBody.h"
 #include "ColliderTypes.h"
-
 
 // time
 float t = 0.0f;
@@ -62,6 +60,18 @@ void ApplyImpulse(RigidBody &rb, const glm::vec3 &impLoc, const glm::vec3 &impDi
 	rb.setAngVel(rb.getAngVel() + deltaW);
 }
 
+void ApplyFriction(RigidBody &rb, const glm::vec3 &collP, const glm::vec3 &norm, const glm::vec3 &vr, const float jn) {
+	float mu = 0.25f;
+	glm::vec3 vt = vr - glm::dot(vr, norm) * norm;
+	glm::vec3 jt = -mu * jn * vt / glm::length(vt);
+	float maxFW = glm::length(rb.getAngVel() / glm::length(rb.getInvInertia() * glm::cross(collP, vt / glm::length(vt))));
+	if (glm::length(jt) > maxFW) {
+		jt = jt / glm::length(jt);
+		jt *= maxFW;
+	}
+	ApplyImpulse(rb, collP, jt);
+}
+
 void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {
 	glm::vec3 collP = glm::vec3(0.0f);
 	glm::vec3 collN = glm::vec3(0.0f);
@@ -86,6 +96,7 @@ void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {
 		// Set new velocities
 		mov.setVel(mov.getVel() + (j * oneOverM) * collN);
 		mov.setAngVel(mov.getAngVel() + j * inT * glm::cross(cToP, collN));
+		ApplyFriction(mov, collP, collN, vAtP, j);
 	}
 }
 
@@ -129,7 +140,7 @@ void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 				deBit[i] = glm::dot(collN, glm::cross(inT[i] * glm::cross(cToP[i], collN), cToP[i]));
 			}
 			// Compute j
-			float numer = -(1.0f + 0.6f) * glm::dot(vAtP[1] - vAtP[0], collN);
+			float numer = -(1.0f + rbs[0]->getCor()) * glm::dot(vAtP[1] - vAtP[0], collN);
 			float denom = oneOverM[0] + oneOverM[1] + deBit[0] + deBit[1];
 			float j = numer / denom;
 			// Apply new forces
@@ -148,7 +159,9 @@ void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 				rbs[i]->setAngVel(rbs[i]->getAngVel() - j*inT[i] * glm::cross(cToP[i], collN));
 				j *= -1;
 			}
-			//app.pauseSimulation = true;
+			j *= -1;
+			ApplyFriction(rb1, collP, collN, vAtP[1] - vAtP[0], -j);
+			ApplyFriction(rb2, collP, collN, vAtP[1] - vAtP[0], j);
 		}
 	}
 }
@@ -168,7 +181,7 @@ int main()
 	plane.scale(glm::vec3(20.0f, 20.0f, 20.0f));
 	plane.translate(glm::vec3(0.0f, 0.0f, 0.0f));
 	rbPlane.setMesh(plane);
-	rbPlane.setMass(100000000000.0f);
+	rbPlane.setMass(10.0f);
 	rbPlane.setColl(Plane::Plane());
 	rbPlane.setFixed(true);
 
@@ -224,7 +237,7 @@ int main()
 		rib.getMesh().setShader(rbShader);
 		rib.setMass(1.0f);
 		//rib.translate(glm::vec3(0.7 * (-domI) + i * 0.7f, 1.1f, 0.0f + i * 0.1f));
-		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / domI), 2.0f * rad + rad * sin(M_PI * i * 2.0f/ domI), 0.0f + i * 0.1f));
+		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / domI), 2.0f * rad + rad * sin(M_PI * i * 2.0f/ domI), -10.0f + i * 0.1f));
 		rib.setVel(glm::vec3(0.0f));
 		rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.1f));
 		rib.setCor(0.6f);
