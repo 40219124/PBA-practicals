@@ -1,5 +1,6 @@
 #include "Collider.h"
 
+#include <cmath>  
 #include <vector>
 
 // GLM
@@ -20,7 +21,7 @@ void Collider::rotate(const float &angle, const glm::vec3 &vect) {
 	m_axes = glm::rotate(glm::mat4(m_axes), angle, vect);
 }
 
-bool Collider::testCollision(Collider b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen) {
+bool Collider::testCollision(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen) {
 	// Add together values of types
 	int x = (int)this->getType() + (int)b.getType();
 	// Switch based on types involved
@@ -52,6 +53,42 @@ void Collider::getClosestPtPointObb(glm::vec3 p, glm::vec3 &out) {
 	}
 }
 
+glm::vec3 Collider::closestPointsToObb(Collider &col, glm::vec3 verts[8], std::vector<int> &ins) {
+	// Distance of shortest 
+	float dist = INFINITY;
+	// Average collision variables
+	int count = 0;
+	glm::vec3 total = glm::vec3(0.0f);
+	for (int i = 0; i < 8; i++) {
+		glm::vec3 vert = verts[i];
+		// Create test vertex
+		glm::vec3 test = glm::vec3(0.0f);
+		// Find closest point on this Obb to p
+		col.getClosestPtPointObb(vert, test);
+		// Find difference between this obb and p
+		glm::vec3 vec = vert - test;
+		// Get length of difference squared
+		float dtest = glm::dot(vec, vec);
+		// if multiple contact places
+		float error = 0.0001;
+		if (abs(dist - dtest) < error) {
+			count++;
+			total += test;
+		}
+		// If the length is shorter than other tested lengths keep it and point
+		else if (dtest < dist - error) {
+			dist = dtest;
+			count = 1;
+			total = test;
+		}
+		// If vertex inside OBB, record index
+		if (dtest < error) {
+			ins.push_back(i);
+		}
+	}
+	return total / count;
+}
+
 glm::vec3 deepestPoint(const glm::vec3 colPos, const glm::vec3 verts[8], const std::vector<int> &is, const glm::vec3 &n, float &revPen) {
 	float low = INFINITY;
 	int count = 0;
@@ -75,11 +112,14 @@ glm::vec3 deepestPoint(const glm::vec3 colPos, const glm::vec3 verts[8], const s
 	return total / count;
 }
 
-bool Collider::findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen) {
+bool Collider::findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen) {
 	// If there is no collision return
 	if (!this->testOBBOBB(b)) {
 		return false;
 	}
+	/*
+	* Find all vertices
+	*/
 	// Put colliders into an array for loop stuff
 	Collider* colls[2] = { this, &b };
 	glm::vec3 vertsA[8];
@@ -107,98 +147,113 @@ bool Collider::findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOu
 			}
 		}
 	}
+	/*
+	* Get the points inside of the other obb, and the average of their locations
+	*/
 	// Index trackers of vertex locations
 	std::vector<int> inA;
 	std::vector<int> inB;
-	// Distance of shortest 
-	float dist = INFINITY;
-	// Average collision variables
-	int count = 0;
-	glm::vec3 total = glm::vec3(0.0f);
 	int faceShape = 0;
-	// First pass vertex to obb
-	for (int flip = 0; flip < 2; flip++) {
-		for (int i = 0; i < 8; i++) {
-			glm::vec3 vert;
-			if (flip == 0) {
-				vert = vertsA[i];
-			}
-			else {
-				vert = vertsB[i];
-			}
-			// Create test vertex
-			glm::vec3 test = glm::vec3(0.0f);
-			// Find closest point on this Obb to p
-			colls[(flip + 1) % 2]->getClosestPtPointObb(vert, test);
-			// Find difference between this obb and p
-			glm::vec3 vec = vert - test;
-			// Get length of difference squared
-			float dtest = glm::dot(vec, vec);
-			// if multiple contact places
-			float error = 0.0001;
-			if (abs(dist - dtest) < error) {
-				count++;
-				total += test;
-			}
-			// If the length is shorter than other tested lengths keep it and point
-			else if (dtest < dist - error) {
-				dist = dtest;
-				count = 1;
-				total = test;
-				faceShape = (flip + 1) % 2;
-			}
-			// If vertex inside OBB, record index
-			if (dtest < error) {
-				if (flip == 0) {
-					inA.push_back(i);
-				}
-				else {
-					inB.push_back(i);
-				}
+
+	glm::vec3 avgA = closestPointsToObb(b, vertsA, inA);
+	glm::vec3 avgB = closestPointsToObb(*this, vertsB, inB);
+
+	/*
+	* Find the axis along which each obb penetrated the other the least
+	*/
+	int indexA = -1;
+	float lowA = INFINITY;
+	if (inA.size() > 0) {
+		// Find collision normal
+		for (int i = 0; i < 3; ++i) {
+			float len = glm::dot(avgA - colls[1]->getPos(), colls[1]->getAxes()[i]);
+			float pen = colls[1]->getRadii()[i] - abs(len);
+			if (pen < lowA) {
+				lowA = pen;
+				indexA = i;
 			}
 		}
 	}
-	// Divide total by vertices that contributed
-	glm::vec3 avgCP = total / count;
 
+	int indexB = -1;
+	float lowB = INFINITY;
+	if (inB.size() > 0) {
+		// Find collision normal
+		for (int i = 0; i < 3; ++i) {
+			float len = glm::dot(avgB - colls[0]->getPos(), colls[0]->getAxes()[i]);
+			float pen = colls[0]->getRadii()[i] - abs(len);
+			if (pen < lowB) {
+				lowB = pen;
+				indexB = i;
+			}
+		}
+	}
+	/*
+	* After finding axis of penetration, find the obb which penetrated most
+	*/
+	glm::vec3 avgCP;
+	int index;
+	// if verts from this pen'd
+	if (indexA > -1) {
+		// if verts from b pen'd too
+		if (indexB > -1) {
+			// take the one that penetrated most
+			if (lowA > lowB) {
+				index = indexA;
+				faceShape = 1;
+			}
+			else {
+				index = indexB;
+				faceShape = 0;
+			}
+			// average collision point is average of a and b averages
+			avgCP = (avgA + avgB) / 2.0f;
+		}
+		// just a pen'd
+		else {
+			index = indexA;
+			faceShape = 1;
+			avgCP = avgA;
+		}
+	// no a pen
+	}
+	else {
+		// just b pen'd
+		if (indexB > -1) {
+			index = indexB;
+			faceShape = 0;
+			avgCP = avgB;
+		}
+		// no pen (this should do edge stuff i guess. Or maybe that should come before here)
+		else {
+			return false;
+		}
+	}
+	/*
+	* Working out of final returned values
+	*/
 	// Average collision point in space of object hit in face
 	glm::vec3 avgInObb = avgCP - colls[faceShape]->getPos();
 
-	int index = 0;
-	float low = INFINITY;
-	// Find collision normal
-	for (int i = 0; i < 3; ++i) {
-		float len = glm::dot(avgInObb, colls[faceShape]->getAxes()[i]);
-		if (colls[faceShape]->getRadii()[i] - abs(len) < low) {
-			low = colls[faceShape]->getRadii()[i] - abs(len);
-			index = i;
-		}
-	}
 	normOut = colls[faceShape]->getAxes()[index];
-	if (glm::dot(normOut, avgCP - colls[faceShape]->getPos()) < 0.0f) {
+	if (glm::dot(normOut, avgCP - colls[faceShape]->getPos()) < 0.0f && glm::dot(normOut, colls[(faceShape + 1) % 2]->getPos() - colls[faceShape]->getPos()) < 0.0f) {
 		normOut *= -1;
 	}
-
-	if (inA.size() == 0 && inB.size() == 0) {
-		out = total / count;
+	// Second pass test
+	float revPen;
+	if ((faceShape + 1) % 2 == 0) {
+		out = deepestPoint(colls[1]->getPos(), vertsA, inA, normOut, revPen);
 	}
 	else {
-		// Second pass test
-		float revPen;
-		if ((faceShape + 1) % 2 == 0) {
-			out = deepestPoint(colls[1]->getPos(), vertsA, inA, normOut, revPen);
-		}
-		else {
-			out = deepestPoint(colls[0]->getPos(), vertsB, inB, normOut, revPen);
-		}
-		halfPen = (colls[faceShape]->getRadii()[index] - revPen) / 2.0f;
+		out = deepestPoint(colls[0]->getPos(), vertsB, inB, normOut, revPen);
 	}
+	halfPen = 0.0001 + (colls[faceShape]->getRadii()[index] - fminf(1.0f, abs(revPen))) / 2.0f;
 
 	// Return whether there was collision
 	return true;
 }
 
-bool Collider::testOBBOBB(Collider b) {
+bool Collider::testOBBOBB(Collider &b) {
 	float r1, r2;
 	glm::mat3 rot, absRot;
 	float error = 0.00001f;

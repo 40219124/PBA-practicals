@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <vector>
+
 enum BV
 {
 	OBB = 1,
@@ -29,19 +31,21 @@ public:
 
 	void rotate(const float &angle, const glm::vec3 &vect);
 
-	bool testCollision(Collider b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
+	bool testCollision(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
 
 protected:
 	void getClosestPtPointObb(glm::vec3 p, glm::vec3 &out);
 
-	bool findCollPointOBBOBB(Collider b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
+	glm::vec3 closestPointsToObb(Collider &col, glm::vec3 verts[8], std::vector<int> &ins);
 
-	bool testOBBOBB(Collider b);
-	bool testOBBPlane(Collider b);
-	bool testOBBSpere(Collider b);
-	bool testPlanePlane(Collider b);
-	bool testPlaneSpere(Collider b);
-	bool testSpereSpere(Collider b);
+	bool findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
+
+	bool testOBBOBB(Collider &b);
+	bool testOBBPlane(Collider &b);
+	bool testOBBSpere(Collider &b);
+	bool testPlanePlane(Collider &b);
+	bool testPlaneSpere(Collider &b);
+	bool testSpereSpere(Collider &b);
 
 	glm::mat3 m_axes;
 	glm::vec3 m_radii;
