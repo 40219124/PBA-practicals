@@ -34,6 +34,8 @@ public:
 	float getMass() const { return m_mass; }
 	float getCor() { return m_cor; }
 
+	bool getFixed() { return m_fixed; }
+
 	glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float deltaTime);
 
 	/*
@@ -54,6 +56,7 @@ public:
 	// physical properties
 	void setCor(float cor) { m_cor = cor; }
 	void setMass(float mass) { m_mass = mass; }
+	void setFixed(bool b) { m_fixed = b; }
 
 	/*
 	** OTHER METHODS
@@ -78,6 +81,8 @@ private:
 	glm::vec3 m_acc; // acceleration
 	glm::vec3 m_vel; // velocity
 	glm::vec3 m_pos; // position
+
+	bool m_fixed = false;
 
 	std::vector<Force*> m_forces;
 };

@@ -341,6 +341,16 @@ bool Collider::findCollPointPlaneOBB(Collider &b, glm::vec3 &out, glm::vec3 &nor
 		return false;
 	}
 	halfPen = (rLen - toLen) / 2.0f;
-	out = b.getPos() - (toLen + halfPen) * normOut;
+	out = b.getPos();
+	for (int i = 0; i < 3; ++i) {
+		glm::vec3 vec = b.getRadii()[i] * b.getAxes()[i];
+		if (glm::dot(vec, normOut) > 0) {
+			vec *= -1.0f;
+		}
+		else if (abs(glm::dot(vec, normOut)) < 0.01) {
+			vec *= 0.0f;
+		}
+		out += vec;
+	}
 	return true;
 }

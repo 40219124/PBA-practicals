@@ -62,55 +62,95 @@ void ApplyImpulse(RigidBody &rb, const glm::vec3 &impLoc, const glm::vec3 &impDi
 	rb.setAngVel(rb.getAngVel() + deltaW);
 }
 
+void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {
+	glm::vec3 collP = glm::vec3(0.0f);
+	glm::vec3 collN = glm::vec3(0.0f);
+	float halfPen = 0.0f;
+	bool flag = fix.getColl().testCollision(mov.getColl(), collP, collN, halfPen);
+	if (flag) {
+		collP += collN * halfPen;
+		p1.setPos(collP);
+		// Set up loop variables
+		glm::vec3 cToP = collP - mov.getPos();
+		glm::vec3 vAtP = mov.getVel() + glm::cross(mov.getAngVel(), cToP);
+		float oneOverM = 1.0f / mov.getMass();
+		glm::mat3 inT = mov.getInvInertia();
+		float deBit = glm::dot(collN, glm::cross(inT * glm::cross(cToP, collN), cToP));
+		// Compute j
+		float numer = -(1.0f + 0.6f) * glm::dot(vAtP, collN);
+		float denom = oneOverM + deBit;
+		float j = numer / denom;
+		// Revert some movement
+		glm::vec3 trans = halfPen * 2.0f * collN;
+		mov.translate(trans);
+		// Set new velocities
+		mov.setVel(mov.getVel() - (j * oneOverM) * collN);
+		mov.setAngVel(mov.getAngVel() - j * inT * glm::cross(cToP, collN));
+		j *= -1;
+	}
+}
+
 void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 	glm::vec3 collP = glm::vec3(0.0f);
 	glm::vec3 collN = glm::vec3(0.0f);
 	float halfPen = 0.0f;
 	bool flag = rb1.getColl().testCollision(rb2.getColl(), collP, collN, halfPen);
 	if (flag) {
-		p1.setPos(collP);
-		// Collision response time
-		RigidBody* rbs[2];
-		// Allocate rigid bodies based on face collision (rbs[0] is the face)
-		if (glm::dot(collP - rb1.getPos(), collN) > 0) {
-			rbs[0] = &rb1;
-			rbs[1] = &rb2;
+		if (rb1.getFixed() || rb2.getFixed()) {
+			ApplyCollisionFixed((rb1.getFixed() ? rb1 : rb2), (rb1.getFixed() ? rb2 : rb1), p1);
 		}
 		else {
-			rbs[1] = &rb1;
-			rbs[0] = &rb2;
+			p1.setPos(collP);
+			// Collision response time
+			RigidBody* rbs[2];
+			// Allocate rigid bodies based on face collision (rbs[0] is the face)
+			if (glm::dot(collP - rb1.getPos(), collN) > 0) {
+				rbs[0] = &rb1;
+				rbs[1] = &rb2;
+			}
+			else {
+				rbs[1] = &rb1;
+				rbs[0] = &rb2;
+			}
+			// Set up loop variables
+			glm::vec3 cToP[2];
+			glm::vec3 vAtP[2];
+			float oneOverM[2];
+			glm::mat3 inT[2];
+			float deBit[2];
+			// Get variables from different rb's
+			for (int i = 0; i < 2; i++) {
+				cToP[i] = collP - rbs[i]->getPos();
+				if (rbs[i]->getColl().getType() == plane) {
+					cToP[i] = collP - halfPen;
+				}
+				vAtP[i] = rbs[i]->getVel() + glm::cross(rbs[i]->getAngVel(), cToP[i]);
+				oneOverM[i] = 1.0f / rbs[i]->getMass();
+				inT[i] = rbs[i]->getInvInertia();
+				deBit[i] = glm::dot(collN, glm::cross(inT[i] * glm::cross(cToP[i], collN), cToP[i]));
+			}
+			// Compute j
+			float numer = -(1.0f + 0.6f) * glm::dot(vAtP[1] - vAtP[0], collN);
+			float denom = oneOverM[0] + oneOverM[1] + deBit[0] + deBit[1];
+			float j = numer / denom;
+			// Apply new forces
+			for (int i = 0; i < 2; i++) {
+				// Revert some movement
+				glm::vec3 trans = (i == 0 ? -halfPen : halfPen) * collN;
+				if (rbs[(i + 1) % 2]->getColl().getType() == plane) {
+					trans *= 2.0f;
+				}
+				if (rbs[i]->getColl().getType() == plane) {
+					trans *= 0.0f;
+				}
+				rbs[i]->translate(trans);
+				// Set new velocities
+				rbs[i]->setVel(rbs[i]->getVel() - (j * oneOverM[i]) * collN);
+				rbs[i]->setAngVel(rbs[i]->getAngVel() - j*inT[i] * glm::cross(cToP[i], collN));
+				j *= -1;
+			}
+			//app.pauseSimulation = true;
 		}
-		// Set up loop variables
-		glm::vec3 cToP[2];
-		glm::vec3 vAtP[2];
-		float oneOverM[2];
-		glm::mat3 inT[2];
-		float deBit[2];
-		// Get variables from different rb's
-		for (int i = 0; i < 2; i++) {
-			cToP[i] = collP - rbs[i]->getPos();
-			vAtP[i] = rbs[i]->getVel() + glm::cross(rbs[i]->getAngVel(), cToP[i]);
-			oneOverM[i] = 1.0f / rbs[i]->getMass();
-			inT[i] = rbs[i]->getInvInertia();
-			deBit[i] = glm::dot(collN, glm::cross(inT[i] * glm::cross(cToP[i], collN), cToP[i]));
-		}
-		// Compute j
-		float numer = -(1.0f + 0.6f) * glm::dot(vAtP[1] - vAtP[0], collN);
-		float denom = oneOverM[0] + oneOverM[1] + deBit[0] + deBit[1];
-		float j = numer / denom;
-		// Apply new forces
-		for (int i = 0; i < 2; i++) {
-			// Revert some movement
-			glm::vec3 trans = (i == 0 ? -halfPen : halfPen) * collN;
-			rbs[i]->translate(trans);
-			// Set new velocities
-			rbs[i]->setVel(rbs[i]->getVel() - (j * oneOverM[i]) * collN);
-			rbs[i]->setAngVel(rbs[i]->getAngVel() - j*inT[i] * glm::cross(cToP[i], collN));
-			j *= -1;
-		}
-
-
-		//app.pauseSimulation = true;
 	}
 }
 
@@ -129,6 +169,7 @@ int main()
 	plane.scale(glm::vec3(20.0f, 20.0f, 20.0f));
 	plane.translate(glm::vec3(0.0f, 0.0f, 0.0f));
 	rbPlane.setMesh(plane);
+	rbPlane.setMass(100000000000.0f);
 	rbPlane.setColl(Plane::Plane());
 
 	// create cube
@@ -139,8 +180,8 @@ int main()
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
 	rb1.getMesh().setShader(rbShader);
 	rb1.setMass(1.0f);
-	rb1.translate(glm::vec3(5.0f, 3.0f, 0.2f));
-	//rb1.setVel(glm::vec3(-2.0f, 0.0f, 0.0f));
+	rb1.translate(glm::vec3(5.0f, 30.0f, 0.2f));
+	rb1.setVel(glm::vec3(-2.0f, 0.0f, 0.0f));
 	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 	rb1.setColl(Obb::Obb());
 
@@ -150,7 +191,7 @@ int main()
 	rb2.setMesh(m2);
 	rb2.getMesh().setShader(rbShader);
 	rb2.setMass(1.0f);
-	rb2.translate(glm::vec3(-5.0f, 3.2f, 0.0f));
+	rb2.translate(glm::vec3(-5.0f, 30.2f, 0.0f));
 	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
 	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
 	rb2.setColl(Obb::Obb());
@@ -161,22 +202,24 @@ int main()
 	rb3.setMesh(m3);
 	rb3.getMesh().setShader(rbShader);
 	rb3.setMass(1.0f);
-	rb3.translate(glm::vec3(-15.0f, 3.3f, 0.0f));
+	rb3.translate(glm::vec3(-15.0f, 30.3f, 0.0f));
 	rb3.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
 	rb3.setAngVel(glm::vec3(0.2f, -0.6f, 0.4f));
 	rb3.setColl(Obb::Obb());
 
+	Gravity grav = Gravity::Gravity(rb1.getMass() * glm::vec3(0.0f, -9.8f, 0.0f));
 	if (true) {
-		Gravity grav = Gravity::Gravity(rb1.getMass() * glm::vec3(0.0f, -9.8f, 0.0f));
-		rb1.setVel(glm::vec3(0.0f));
-		rb1.setAngVel(glm::vec3(0.0f));
 		rb1.addForce(&grav);
-		rb2.setVel(glm::vec3(0.0f));
-		rb2.setAngVel(glm::vec3(0.0f));
 		rb2.addForce(&grav);
-		rb3.setVel(glm::vec3(0.0f));
-		rb3.setAngVel(glm::vec3(0.0f));
 		rb3.addForce(&grav);
+		if (false) {
+			rb1.setVel(glm::vec3(0.0f));
+			rb1.setAngVel(glm::vec3(0.0f));
+			rb2.setVel(glm::vec3(0.0f));
+			rb2.setAngVel(glm::vec3(0.0f));
+			rb3.setVel(glm::vec3(0.0f));
+			rb3.setAngVel(glm::vec3(0.0f));
+		}
 	}
 
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
@@ -230,7 +273,7 @@ int main()
 				integrateRot(rb2, dt);
 				integrateRot(rb3, dt);
 
-				
+
 				ApplyCollision(rb1, rb2, p1);
 				ApplyCollision(rb1, rb3, p2);
 				ApplyCollision(rb2, rb3, p3);
