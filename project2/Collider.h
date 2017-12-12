@@ -6,9 +6,9 @@
 
 enum BV
 {
-	OBB = 1,
-	Plane = 2,
-	Sphere = 4
+	obb = 1,
+	plane = 2,
+	sphere = 4
 };
 
 class Collider {
@@ -16,13 +16,13 @@ public:
 	Collider();
 	~Collider();
 
-	glm::vec3 getPos() { return m_pos; }
+	virtual glm::vec3 getPos() { return m_pos; }
 	BV getType() { return m_type; }
 
-	void setPos(glm::vec3 pos) { m_pos = pos; }
+	virtual void setPos(glm::vec3 pos) { m_pos = pos; }
 
-	glm::mat3 getAxes() { return m_axes; }
-	glm::vec3 getRadii() { return m_radii; }
+	virtual glm::mat3 getAxes() { return m_axes; }
+	virtual glm::vec3 getRadii() { return m_radii; }
 
 	void setAxes(glm::mat3 a) { m_axes = a; }
 	void setAxes(int i, glm::vec3 a) { m_axes[i] = a; }
@@ -39,6 +39,7 @@ protected:
 	glm::vec3 closestPointsToObb(Collider &col, glm::vec3 verts[8], std::vector<int> &ins);
 
 	bool findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
+	bool findCollPointPlaneOBB(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen);
 
 	bool testOBBOBB(Collider &b);
 	bool testOBBPlane(Collider &b);

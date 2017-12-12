@@ -24,13 +24,13 @@
 #include "Mesh.h"
 #include "Particle.h"
 #include "RigidBody.h"
-#include "Obb.h"
+#include "ColliderTypes.h"
 
 
 // time
 float t = 0.0f;
 const float dt = 0.01f;
-float timeMultiplier = 0.6f; // controls the speed of the simulation
+float timeMultiplier = 1.6f; // controls the speed of the simulation
 
 // forces
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
@@ -71,7 +71,7 @@ void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 		p1.setPos(collP);
 		// Collision response time
 		RigidBody* rbs[2];
-		// Allocate rigid bodies based on face collision
+		// Allocate rigid bodies based on face collision (rbs[0] is the face)
 		if (glm::dot(collP - rb1.getPos(), collN) > 0) {
 			rbs[0] = &rb1;
 			rbs[1] = &rb2;
@@ -101,7 +101,7 @@ void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 		// Apply new forces
 		for (int i = 0; i < 2; i++) {
 			// Revert some movement
-			glm::vec3 trans = (i == (glm::dot(collP - rb1.getPos(), collN) > 0 ? 0 : 1) ? -halfPen : halfPen) * collN;
+			glm::vec3 trans = (i == 0 ? -halfPen : halfPen) * collN;
 			rbs[i]->translate(trans);
 			// Set new velocities
 			rbs[i]->setVel(rbs[i]->getVel() - (j * oneOverM[i]) * collN);
@@ -123,10 +123,13 @@ int main()
 	Application::camera.setCameraPosition(glm::vec3(0.0f, 3.0f, 20.0f));
 
 	// create environment ( large plane at y=-3)
+	RigidBody rbPlane = RigidBody();
 	Mesh plane = Mesh::Mesh(Mesh::QUAD);
 	plane.setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(20.0f, 20.0f, 20.0f));
 	plane.translate(glm::vec3(0.0f, 0.0f, 0.0f));
+	rbPlane.setMesh(plane);
+	rbPlane.setColl(Plane::Plane());
 
 	// create cube
 	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
@@ -137,7 +140,7 @@ int main()
 	rb1.getMesh().setShader(rbShader);
 	rb1.setMass(1.0f);
 	rb1.translate(glm::vec3(5.0f, 3.0f, 0.2f));
-	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
+	//rb1.setVel(glm::vec3(-2.0f, 0.0f, 0.0f));
 	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 	rb1.setColl(Obb::Obb());
 
@@ -162,6 +165,10 @@ int main()
 	rb3.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
 	rb3.setAngVel(glm::vec3(0.2f, -0.6f, 0.4f));
 	rb3.setColl(Obb::Obb());
+
+	if (true) {
+
+	}
 
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 	Particle p1 = Particle::Particle();

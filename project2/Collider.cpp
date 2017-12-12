@@ -28,6 +28,15 @@ bool Collider::testCollision(Collider &b, glm::vec3 &out, glm::vec3 &normOut, fl
 	switch (x) {
 	case 2:
 		return this->findCollPointOBBOBB(b, out, normOut, halfPen);
+		break;
+	case 3:
+		if (this->getType() == plane) {
+			return this->findCollPointPlaneOBB(b, out, normOut, halfPen);
+		}
+		else {
+			return b.findCollPointPlaneOBB(*this, out, normOut, halfPen);
+		}
+		break;
 	}
 	return x == 1;
 }
@@ -215,7 +224,7 @@ bool Collider::findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normO
 			faceShape = 1;
 			avgCP = avgA;
 		}
-	// no a pen
+		// no a pen
 	}
 	else {
 		// just b pen'd
@@ -320,3 +329,18 @@ bool Collider::testOBBOBB(Collider &b) {
 	return true;
 }
 
+bool Collider::findCollPointPlaneOBB(Collider &b, glm::vec3 &out, glm::vec3 &normOut, float &halfPen) {
+	normOut = this->getAxes()[0];
+	glm::vec3 rVec = glm::vec3(b.getRadii()[0] * abs(glm::dot(normOut, b.getAxes()[0])),
+		b.getRadii()[1] * abs(glm::dot(normOut, b.getAxes()[1])),
+		b.getRadii()[2] * abs(glm::dot(normOut, b.getAxes()[2])));
+	float rLen = rVec[0] + rVec[1] + rVec[2];
+	glm::vec3 pToC = b.getPos() - this->getPos();
+	float toLen = glm::dot(pToC, normOut);
+	if (toLen > rLen) {
+		return false;
+	}
+	halfPen = (rLen - toLen) / 2.0f;
+	out = b.getPos() - (toLen + halfPen) * normOut;
+	return true;
+}
