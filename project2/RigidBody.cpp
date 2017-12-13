@@ -25,3 +25,13 @@ glm::mat3 RigidBody::calcIT() {
 	it[2][2] = (powf(m_dimensions[0], 2.0f) + powf(m_dimensions[1], 2.0f)) * mass12;
 	return glm::inverse(it);
 }
+
+void RigidBody::resolveQueues() {
+	Body::resolveQueues();
+	glm::vec3 a = glm::vec3(0.0f);
+	while (!m_angQueue.empty()) {
+		a += m_angQueue.back();
+		m_angQueue.pop_back();
+	}
+	this->setAngVel(this->getAngVel() + a);
+}

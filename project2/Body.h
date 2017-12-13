@@ -58,6 +58,11 @@ public:
 	void setMass(float mass) { m_mass = mass; }
 	void setFixed(bool b) { m_fixed = b; }
 
+	// queues
+	void addTlate(glm::vec3 t) { m_tlateQueue.push_back(t); }
+	void addVel(glm::vec3 v) { m_velQueue.push_back(v); }
+	virtual void resolveQueues();
+
 	/*
 	** OTHER METHODS
 	*/
@@ -74,6 +79,9 @@ public:
 private:
 	Mesh m_mesh; // mesh used to represent the body
 	Collider m_coll; // collider used to break everything
+
+	std::vector<glm::vec3> m_tlateQueue;
+	std::vector<glm::vec3> m_velQueue;
 
 	float m_mass; // mass
 	float m_cor; // coefficient of restitution

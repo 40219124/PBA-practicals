@@ -17,9 +17,14 @@ public:
 	glm::vec3 getAngAcc() { return m_angAcc; }
 	glm::mat3 getInvInertia() { return glm::mat3(getRotate()) * m_invInertia * glm::mat3(glm::transpose(getRotate())); }
 	void scale(glm::vec3 vect);
+
+	void addAngVel(glm::vec3 a) { m_angQueue.push_back(a); }
+	void resolveQueues();
 	
 private:
 	glm::mat3 calcIT();
+
+	std::vector<glm::vec3> m_angQueue;
 
 	float m_density;
 	glm::vec3 m_dimensions = glm::vec3(2.0f, 2.0f, 2.0f);

@@ -40,3 +40,18 @@ glm::vec3 Body::applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float
 	}
 	return acc;
 }
+
+void Body::resolveQueues() {
+	glm::vec3 t = glm::vec3(0.0f);
+	while (!m_tlateQueue.empty()) {
+		t += m_tlateQueue.back();
+		m_tlateQueue.pop_back();
+	}
+	this->translate(t);
+	glm::vec3 v = glm::vec3(0.0f);
+	while (!m_velQueue.empty()) {
+		v += m_velQueue.back();
+		m_velQueue.pop_back();
+	}
+	this->setVel(this->getVel() + v);
+}
