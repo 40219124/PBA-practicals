@@ -8,7 +8,7 @@ public:
 	RigidBody();
 	~RigidBody();
 	// set and get methods
-	void setAngVel(const glm::vec3 &omega) { m_angVel = omega; }
+	void setAngVel(const glm::vec3 &omega);
 	void setAngAccl(const glm::vec3 &alpha) { m_angAcc = alpha; }
 	void setInvInertia(const glm::mat3 &invInertia) { m_invInertia = invInertia; }
 	void setMass(float mass);

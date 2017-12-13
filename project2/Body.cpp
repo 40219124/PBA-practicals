@@ -42,6 +42,7 @@ glm::vec3 Body::applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float
 }
 
 void Body::resolveQueues() {
+	this->setCollFixed(false);
 	glm::vec3 t = glm::vec3(0.0f);
 	while (!m_tlateQueue.empty()) {
 		t += m_tlateQueue.back();

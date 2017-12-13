@@ -9,6 +9,16 @@ void RigidBody::setMass(float mass) {
 	m_invInertia = calcIT();
 }
 
+void RigidBody::setAngVel(const glm::vec3 &omega) {
+	glm::vec3 o = omega;
+	float lim = 30.0f;
+	if (glm::dot(o, o) > powf(lim, 2.0f)) {
+		o /= glm::length(o);
+		o *= lim;
+	}
+	m_angVel = o;
+}
+
 void RigidBody::scale(glm::vec3 scale) {
 	Body::scale(scale);
 	for (int i = 0; i < 3; ++i) {
@@ -34,4 +44,5 @@ void RigidBody::resolveQueues() {
 		m_angQueue.pop_back();
 	}
 	this->setAngVel(this->getAngVel() + a);
+
 }

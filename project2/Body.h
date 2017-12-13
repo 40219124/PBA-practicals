@@ -35,6 +35,7 @@ public:
 	float getCor() { return m_cor; }
 
 	bool getFixed() { return m_fixed; }
+	bool getCollFixed() { return m_collFixed; }
 
 	glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float deltaTime);
 
@@ -57,6 +58,7 @@ public:
 	void setCor(float cor) { m_cor = cor; }
 	void setMass(float mass) { m_mass = mass; }
 	void setFixed(bool b) { m_fixed = b; }
+	void setCollFixed(bool b) { m_collFixed = b; }
 
 	// queues
 	void addTlate(glm::vec3 t) { m_tlateQueue.push_back(t); }
@@ -91,6 +93,7 @@ private:
 	glm::vec3 m_pos; // position
 
 	bool m_fixed = false;
+	bool m_collFixed = false;
 
 	std::vector<Force*> m_forces;
 };
