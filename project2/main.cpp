@@ -216,48 +216,8 @@ int main()
 		sidePlane.setFixed(true);
 		planes.push_back(sidePlane);
 	}
-
-	// create cube
-	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
-	// rigid body set up
-	RigidBody rb1 = RigidBody();
-	rb1.setMesh(m1);
-	rb1.setColl(Obb::Obb());
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
-	rb1.getMesh().setShader(rbShader);
-	rb1.setMass(1.0f);
-	rb1.translate(glm::vec3(5.0f, 3.0f, 0.2f));
-	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
-	rb1.setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
-	rb1.setCor(0.6f);
-	rb1.scale(glm::vec3(0.2f, 1.0f, 0.4f));
-
-	// create rb2
-	Mesh m2 = Mesh::Mesh(Mesh::CUBE);
-	RigidBody rb2 = RigidBody();
-	rb2.setMesh(m2);
-	rb2.setColl(Obb::Obb());
-	rb2.getMesh().setShader(rbShader);
-	rb2.setMass(1.0f);
-	rb2.translate(glm::vec3(-5.0f, 3.2f, 0.0f));
-	rb2.setVel(glm::vec3(1.0f, 0.0f, 0.0f));
-	rb2.setAngVel(glm::vec3(0.1f, -0.6f, 0.0f));
-	rb2.setCor(0.6f);
-	rb2.scale(glm::vec3(0.2f, 1.0f, 0.4f));
-
-	// create rb3
-	Mesh m3 = Mesh::Mesh(Mesh::CUBE);
-	RigidBody rb3 = RigidBody();
-	rb3.setMesh(m3);
-	rb3.setColl(Obb::Obb());
-	rb3.getMesh().setShader(rbShader);
-	rb3.setMass(1.0f);
-	rb3.translate(glm::vec3(-15.0f, 3.3f, 0.0f));
-	rb3.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
-	rb3.setAngVel(glm::vec3(0.2f, -0.6f, 0.4f));
-	rb3.setCor(0.6f);
-	rb3.scale(glm::vec3(0.2f, 1.0f, 0.4f));
-
+	
 	// Create all dominos
 	std::vector<RigidBody> dominos;
 	int domI = 30;
@@ -282,29 +242,6 @@ int main()
 	}
 	ApplyImpulse(dominos[0], glm::vec3(-0.2f, 1.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f));
 
-	// Change 3 basic rbs for testing
-	Gravity grav = Gravity::Gravity(rb1.getMass() * glm::vec3(0.0f, -9.8f, 0.0f));
-	if (false) {
-		rb1.addForce(&grav);
-		rb1.translate(glm::vec3(0.0f, 30.0f, 0.0f));
-		rb2.addForce(&grav);
-		rb2.translate(glm::vec3(0.0f, 30.0f, 0.0f));
-		rb3.addForce(&grav);
-		rb3.translate(glm::vec3(0.0f, 30.0f, 0.0f));
-		if (true) {
-			rb1.setVel(glm::vec3(0.0f));
-			rb1.setCor(1.0f);
-			rb2.setVel(glm::vec3(0.0f));
-			rb2.setCor(1.0f);
-			rb3.setVel(glm::vec3(0.0f));
-			rb3.setCor(1.0f);
-		}
-		if (false) {
-			rb1.setAngVel(glm::vec3(0.0f));
-			rb2.setAngVel(glm::vec3(0.0f));
-			rb3.setAngVel(glm::vec3(0.0f));
-		}
-	}
 
 	// Create particles
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
@@ -313,16 +250,6 @@ int main()
 	p1.translate(glm::vec3(-1.0f, 3.0f, -3.0f));
 	p1.getMesh().setShader(pShader);
 	p1.scale(glm::vec3(0.25f));
-	Particle p2 = Particle::Particle();
-	p2.setMesh(Mesh::Mesh(Mesh::MeshType::TRIANGLE));
-	p2.translate(glm::vec3(1.0f, 3.0f, -3.0f));
-	p2.getMesh().setShader(pShader);
-	p2.scale(glm::vec3(0.25f));
-	Particle p3 = Particle::Particle();
-	p3.setMesh(Mesh::Mesh(Mesh::MeshType::TRIANGLE));
-	p3.translate(glm::vec3(1.0f, 3.0f, -3.0f));
-	p3.getMesh().setShader(pShader);
-	p3.scale(glm::vec3(0.25f));
 
 	// time
 	float currentTime = (float)glfwGetTime();
@@ -347,35 +274,20 @@ int main()
 			if (!Application::pauseSimulation) {
 
 				// Accelerations before new velocities
-				rb1.setAcc(rb1.applyForces(rb1.getPos(), rb1.getVel(), t, dt));
-				rb2.setAcc(rb2.applyForces(rb2.getPos(), rb2.getVel(), t, dt));
-				rb3.setAcc(rb3.applyForces(rb3.getPos(), rb3.getVel(), t, dt));
 				for (int i = 0; i < dominos.size(); ++i) {
 					dominos[i].setAcc(dominos[i].applyForces(dominos[i].getPos(), dominos[i].getVel(), t, dt));
 				}
 				// Integration (position)
-				integratePos(rb1, t, dt);
-				integratePos(rb2, t, dt);
-				integratePos(rb3, t, dt);
 				for (int i = 0; i < dominos.size(); ++i) {
 					integratePos(dominos[i], t, dt);
 				}
 
 				// Integration (rotation)
-				integrateRot(rb1, dt);
-				integrateRot(rb2, dt);
-				integrateRot(rb3, dt);
 				for (int i = 0; i < dominos.size(); ++i) {
 					integrateRot(dominos[i], dt);
 				}
 
 				// Collisions
-				ApplyCollision(rb1, rbPlane, p1);
-				ApplyCollision(rb2, rbPlane, p2);
-				ApplyCollision(rb3, rbPlane, p3);
-				ApplyCollision(rb1, rb2, p1);
-				ApplyCollision(rb1, rb3, p2);
-				ApplyCollision(rb2, rb3, p3);
 				for (int i = 0; i < dominos.size() - 1; ++i) {
 					// Planes first so you know if domino can't move
 					ApplyCollision(dominos[i], rbPlane, p1);
@@ -390,9 +302,6 @@ int main()
 				}
 
 				// Resolve queues
-				rb1.resolveQueues();
-				rb2.resolveQueues();
-				rb3.resolveQueues();
 				for (int i = 0; i < dominos.size(); ++i) {
 					dominos[i].resolveQueues();
 				}
@@ -411,12 +320,7 @@ int main()
 		app.draw(plane);
 
 		// draw rigid body
-		app.draw(rb1.getMesh());
-		app.draw(rb2.getMesh());
-		app.draw(rb3.getMesh());
 		app.draw(p1.getMesh());
-		app.draw(p2.getMesh());
-		app.draw(p3.getMesh());
 		for (int i = 0; i < dominos.size() - 1; ++i) {
 			app.draw(dominos[i].getMesh());
 		}
