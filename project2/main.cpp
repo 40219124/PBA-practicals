@@ -24,6 +24,7 @@
 #include "Particle.h"
 #include "RigidBody.h"
 #include "ColliderTypes.h"
+#include "BroadNode.h"
 
 // time
 float t = 0.0f;
@@ -32,6 +33,10 @@ float timeMultiplier = 0.86f; // controls the speed of the simulation
 
 // forces
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
+
+// broadphase
+BroadNode world[10 / 2][10][10 / 2];
+std::vector<glm::vec3> worldIs;
 
 // integration: returns the position difference from the acceleration and a timestep
 void integratePos(RigidBody &rb, float t, float dt) {
@@ -88,6 +93,8 @@ void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {
 	float halfPen = 0.0f;
 	bool flag = fix.getColl().testCollision(mov.getColl(), collP, collN, halfPen);
 	if (flag) {
+		fix.addHit(&mov);
+		mov.addHit(&fix);
 		mov.setCollFixed(true);
 		// Revert some movement
 		glm::vec3 trans = halfPen * 2.0f * collN;
@@ -118,6 +125,8 @@ void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 	float halfPen = 0.0f;
 	bool flag = rb1.getColl().testCollision(rb2.getColl(), collP, collN, halfPen);
 	if (flag) {
+		rb1.addHit(&rb2);
+		rb2.addHit(&rb1);
 		if (rb1.getFixed() || rb2.getFixed()) {
 			ApplyCollisionFixed((rb1.getFixed() ? rb1 : rb2), (rb1.getFixed() ? rb2 : rb1), p1);
 		}
@@ -179,6 +188,44 @@ void ApplyCollision(RigidBody &rb1, RigidBody &rb2, Particle &p1) {
 	}
 }
 
+float CalculateBroadRadius(RigidBody &rb) {
+	glm::mat3 axes = rb.getColl().getAxes();
+	glm::vec3 radii = rb.getColl().getRadii();
+	float r2 = 0.0f;
+	for (int i = 0; i < 3; i++) {
+		r2 += glm::dot(axes[i] * radii[i], axes[i] * radii[i]);
+	}
+	return sqrtf(r2);
+}
+
+void RBintoWorld(RigidBody& rb) {
+	glm::vec3 pos = (rb.getPos() + glm::vec3(10.0f, 0.0f, 10.0f)) / 4.0f;
+	float rad = rb.getBroadRadius();
+	glm::vec3 points[2] = { glm::vec3(pos[0] - rad, pos[1] - rad, pos[2] - rad), glm::vec3(pos[0] + rad, pos[1] + rad, pos[2] + rad) };
+	for (int i = 0; i < 2; ++i) {
+		for (int j = 0; j < 2; ++j) {
+			for (int k = 0; k < 2; ++k) {
+				world[(int)points[i].x][(int)points[j].y][(int)points[k].z].addTemp(&rb);
+				bool flag = false;
+				glm::vec3 is = glm::vec3((int)points[i].x, (int)points[j].y, (int)points[k].z);
+				if (!worldIs.empty()) {
+					for (int i = 0; i < worldIs.size(); ++i) {
+						if (worldIs[i] == is) {
+							flag = true;
+							break;
+						}
+					}
+				}
+				if (!flag) {
+					worldIs.push_back(is);
+				}
+			}
+		}
+	}
+
+
+}
+
 // main function
 int main()
 {
@@ -188,7 +235,7 @@ int main()
 	Application::camera.setCameraPosition(glm::vec3(0.0f, 3.0f, 20.0f));
 
 	// create environment ( large plane at y=-3)
-	float planeScale = 40.0f;
+	const float planeScale = 20.0f;
 	RigidBody rbPlane = RigidBody();
 	Mesh plane = Mesh::Mesh(Mesh::QUAD);
 	rbPlane.setColl(Plane::Plane());
@@ -261,7 +308,7 @@ int main()
 	// Create all dominos
 	std::vector<RigidBody> dominos;
 	int domI = 30;
-	float rad = 10.0f;
+	float rad = 4.0f;
 	for (int i = 0; i < domI; ++i) {
 		Mesh meh = Mesh::Mesh(Mesh::CUBE);
 		RigidBody rib = RigidBody();
@@ -270,17 +317,21 @@ int main()
 		rib.getMesh().setShader(rbShader);
 		rib.setMass(1.0f);
 		float gap = 1.4f;
-		rib.translate(glm::vec3(gap * (-domI / 2.0f) + i * gap, 1.1f, 0.0f));
+		//rib.translate(glm::vec3(gap * (-domI / 2.0f) + i * gap, 1.1f, 0.0f));
 		//rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / domI), 2.0f * rad + rad * sin(M_PI * i * 2.0f / domI), -10.0f + i * 0.1f));
+		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / (domI - 1)), 1.0f, -rad + rad * sin(M_PI * i * 2.0f / (domI - 1))));
+		rib.rotate(-(M_PI * i * 2.0f / (domI - 1) + M_PI_2), glm::vec3(0.0f, 1.0f, 0.0f));
 		rib.setVel(glm::vec3(0.0f));
 		//rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.1f));
 		rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.0f));
 		rib.setCor(0.6f);
 		rib.scale(glm::vec3(0.2f, 1.0f, 0.4f));
 		rib.addForce(new Gravity(glm::vec3(0.0f, -9.8f * rib.getMass(), 0.0f)));
+		rib.setBroadRadius(CalculateBroadRadius(rib));
 		dominos.push_back(rib);
 	}
-	ApplyImpulse(dominos[0], glm::vec3(-0.2f, 1.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f));
+	// Impulse to start dominos falling
+	ApplyImpulse(dominos[3 * domI / 4], glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
 
 	// Change 3 basic rbs for testing
 	Gravity grav = Gravity::Gravity(rb1.getMass() * glm::vec3(0.0f, -9.8f, 0.0f));
@@ -305,6 +356,16 @@ int main()
 			rb3.setAngVel(glm::vec3(0.0f));
 		}
 	}
+
+	for (int i = 0; i < 20; ++i) {
+		for (int j = 0; j < planeScale / 2; ++j) {
+			world[10][i][j].addPerm(&planes[0]);
+			world[0][i][j].addPerm(&planes[1]);
+			world[j][i][0].addPerm(&planes[2]);
+			world[j][i][10].addPerm(&planes[3]);
+		}
+	}
+
 
 	// Create particles
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
@@ -346,6 +407,10 @@ int main()
 			*/
 			if (!Application::pauseSimulation) {
 
+				for (int i = 0; i < dominos.size(); ++i) {
+					RBintoWorld(dominos[i]);
+				}
+
 				// Accelerations before new velocities
 				rb1.setAcc(rb1.applyForces(rb1.getPos(), rb1.getVel(), t, dt));
 				rb2.setAcc(rb2.applyForces(rb2.getPos(), rb2.getVel(), t, dt));
@@ -376,16 +441,43 @@ int main()
 				ApplyCollision(rb1, rb2, p1);
 				ApplyCollision(rb1, rb3, p2);
 				ApplyCollision(rb2, rb3, p3);
-				for (int i = 0; i < dominos.size() - 1; ++i) {
-					// Planes first so you know if domino can't move
-					ApplyCollision(dominos[i], rbPlane, p1);
-					// collision plane loop
-					for (int j = 0; j < planes.size(); ++j) {
-						ApplyCollision(dominos[i], planes[j], p1);
+				//for (int i = 0; i < dominos.size() - 1; ++i) {
+				//	// Planes first so you know if domino can't move
+				//	ApplyCollision(dominos[i], rbPlane, p1);
+				//	// collision plane loop
+				//	for (int j = 0; j < planes.size(); ++j) {
+				//		ApplyCollision(dominos[i], planes[j], p1);
+				//	}
+				//	// Domino to domino loop (checks ahead only)
+				//	for (int j = i + 1; j < dominos.size(); ++j) {
+				//		ApplyCollision(dominos[i], dominos[j], p1);
+				//	}
+				//}
+				for (int index = 0; index < worldIs.size(); ++index)
+				{
+					BroadNode* node = &world[(int)worldIs[index].x][(int)worldIs[index].y][(int)worldIs[index].z];
+					std::vector<RigidBody*> temps = node->getTemps();
+					std::vector<RigidBody*> perms = node->getPerms();
+					if (!perms.empty()) {
+						if (!temps.empty()) {
+							for each (RigidBody* perm in perms)
+							{
+								for each (RigidBody* temp in temps) {
+									if (!perm->hasHit(temp)) {
+										ApplyCollision(*perm, *temp, p1);
+									}
+								}
+							}
+						}
 					}
-					// Domino to domino loop (checks ahead only)
-					for (int j = i + 1; j < dominos.size(); ++j) {
-						ApplyCollision(dominos[i], dominos[j], p1);
+					if (!temps.empty()) {
+						for (int i = 0; i < temps.size() - 1; ++i) {
+							for (int j = i + 1; j < temps.size(); ++j) {
+								if (!temps[i]->hasHit(temps[j])) {
+									ApplyCollision(*temps[i], *temps[j], p1);
+								}
+							}
+						}
 					}
 				}
 

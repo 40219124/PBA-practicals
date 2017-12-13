@@ -36,6 +36,7 @@ public:
 
 	bool getFixed() { return m_fixed; }
 	bool getCollFixed() { return m_collFixed; }
+	float getBroadRadius() { return m_broadR; }
 
 	glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel, float totalTime, float deltaTime);
 
@@ -59,11 +60,13 @@ public:
 	void setMass(float mass) { m_mass = mass; }
 	void setFixed(bool b) { m_fixed = b; }
 	void setCollFixed(bool b) { m_collFixed = b; }
+	void setBroadRadius(float r) { m_broadR = r; }
 
 	// queues
 	void addTlate(glm::vec3 t) { m_tlateQueue.push_back(t); }
 	void addVel(glm::vec3 v) { m_velQueue.push_back(v); }
 	virtual void resolveQueues();
+
 
 	/*
 	** OTHER METHODS
@@ -81,6 +84,7 @@ public:
 private:
 	Mesh m_mesh; // mesh used to represent the body
 	Collider m_coll; // collider used to break everything
+	float m_broadR = 0.0f;
 
 	std::vector<glm::vec3> m_tlateQueue;
 	std::vector<glm::vec3> m_velQueue;

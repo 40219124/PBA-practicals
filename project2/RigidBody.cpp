@@ -38,11 +38,23 @@ glm::mat3 RigidBody::calcIT() {
 
 void RigidBody::resolveQueues() {
 	Body::resolveQueues();
+	this->m_hit.empty();
 	glm::vec3 a = glm::vec3(0.0f);
 	while (!m_angQueue.empty()) {
 		a += m_angQueue.back();
 		m_angQueue.pop_back();
 	}
 	this->setAngVel(this->getAngVel() + a);
+}
 
+
+bool RigidBody::hasHit(RigidBody* r) {
+	if (!m_hit.empty()) {
+		for (int i = 0; i < m_hit.size(); ++i) {
+			if (m_hit[i] == r) {
+				return true;
+			}
+		}
+	}
+	return false;
 }

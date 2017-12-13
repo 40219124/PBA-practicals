@@ -12,6 +12,7 @@ public:
 	void setAngAccl(const glm::vec3 &alpha) { m_angAcc = alpha; }
 	void setInvInertia(const glm::mat3 &invInertia) { m_invInertia = invInertia; }
 	void setMass(float mass);
+	bool hasHit(RigidBody* r);
 
 	glm::vec3 getAngVel() { return m_angVel; }
 	glm::vec3 getAngAcc() { return m_angAcc; }
@@ -20,11 +21,13 @@ public:
 
 	void addAngVel(glm::vec3 a) { m_angQueue.push_back(a); }
 	void resolveQueues();
+	void addHit(RigidBody* r) { m_hit.push_back(r); }
 	
 private:
 	glm::mat3 calcIT();
 
 	std::vector<glm::vec3> m_angQueue;
+	std::vector<RigidBody*> m_hit;
 
 	float m_density;
 	glm::vec3 m_dimensions = glm::vec3(2.0f, 2.0f, 2.0f);
