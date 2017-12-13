@@ -188,7 +188,7 @@ int main()
 	Application::camera.setCameraPosition(glm::vec3(0.0f, 3.0f, 20.0f));
 
 	// create environment ( large plane at y=-3)
-	float planeScale = 40.0f;
+	float planeScale = 14.0f;
 	RigidBody rbPlane = RigidBody();
 	Mesh plane = Mesh::Mesh(Mesh::QUAD);
 	rbPlane.setColl(Plane::Plane());
@@ -221,8 +221,9 @@ int main()
 	// Create all dominos
 	std::vector<RigidBody> dominos;
 	int domI = 30;
-	float rad = 10.0f;
-	for (int i = 0; i < domI; ++i) {
+	float rad = 6.0f;
+	int halfI = domI / 2;
+	for (int i = 0; i < halfI; ++i) {
 		Mesh meh = Mesh::Mesh(Mesh::CUBE);
 		RigidBody rib = RigidBody();
 		rib.setMesh(meh);
@@ -230,8 +231,7 @@ int main()
 		rib.getMesh().setShader(rbShader);
 		rib.setMass(1.0f);
 		float gap = 1.4f;
-		rib.translate(glm::vec3(gap * (-domI / 2.0f) + i * gap, 1.1f, 0.0f));
-		//rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / domI), 2.0f * rad + rad * sin(M_PI * i * 2.0f / domI), -10.0f + i * 0.1f));
+		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / halfI), 7.0f * rad + rad * sin(M_PI * i * 2.0f / halfI), -10.0f + i * 0.1f));
 		rib.setVel(glm::vec3(0.0f));
 		//rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.1f));
 		rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -240,7 +240,24 @@ int main()
 		rib.addForce(new Gravity(glm::vec3(0.0f, -9.8f * rib.getMass(), 0.0f)));
 		dominos.push_back(rib);
 	}
-	ApplyImpulse(dominos[0], glm::vec3(-0.2f, 1.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f));
+	for (int i = 0; i < halfI; ++i) {
+		Mesh meh = Mesh::Mesh(Mesh::CUBE);
+		RigidBody rib = RigidBody();
+		rib.setMesh(meh);
+		rib.setColl(Obb::Obb());
+		rib.getMesh().setShader(rbShader);
+		rib.setMass(1.0f);
+		float gap = 1.4f;
+		rib.translate(glm::vec3(gap * (-halfI / 2.0f) + i * gap, 1.1f, -10.0f));
+		rib.setVel(glm::vec3(0.0f));
+		//rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.1f));
+		rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.0f));
+		rib.setCor(0.6f);
+		rib.scale(glm::vec3(0.2f, 1.0f, 0.4f));
+		rib.addForce(new Gravity(glm::vec3(0.0f, -9.8f * rib.getMass(), 0.0f)));
+		dominos.push_back(rib);
+	}
+	ApplyImpulse(dominos[domI - 1], glm::vec3(-0.2f, 1.0f, 0.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
 
 
 	// Create particles
