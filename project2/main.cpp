@@ -64,12 +64,12 @@ void ApplyFriction(RigidBody &rb, const glm::vec3 &collP, const glm::vec3 &norm,
 	float mu = 0.25f;
 	glm::vec3 vt = vr - glm::dot(vr, norm) * norm;
 	glm::vec3 jt = -mu * jn * vt / glm::length(vt);
-	float maxFW = glm::length(rb.getAngVel() / glm::length(rb.getInvInertia() * glm::cross(collP, vt / glm::length(vt))));
+	/*float maxFW = glm::length(rb.getAngVel() / glm::length(rb.getInvInertia() * glm::cross(collP, vt / glm::length(vt))));
 	if (glm::length(jt) > maxFW) {
 		jt = jt / glm::length(jt);
 		jt *= maxFW;
-	}
-	ApplyImpulse(rb, collP, jt);
+	}*/
+	ApplyImpulse(rb, collP - rb.getPos(), jt);
 }
 
 void ApplyCollisionFixed(RigidBody &fix, RigidBody &mov, Particle &p1) {

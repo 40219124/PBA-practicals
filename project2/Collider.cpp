@@ -243,7 +243,10 @@ bool Collider::findCollPointOBBOBB(Collider &b, glm::vec3 &out, glm::vec3 &normO
 	glm::vec3 avgInObb = avgCP - colls[faceShape]->getPos();
 
 	normOut = colls[faceShape]->getAxes()[index];
-	if (glm::dot(normOut, avgCP - colls[faceShape]->getPos()) < 0.0f && glm::dot(normOut, colls[(faceShape + 1) % 2]->getPos() - colls[faceShape]->getPos()) < 0.0f) {
+	if (glm::dot(normOut, avgCP - colls[faceShape]->getPos()) < 0.0f) {
+		normOut *= -1;
+	}
+	if (glm::dot(normOut, avgCP - colls[(faceShape + 1) % 2]->getPos()) > 0.0f) {
 		normOut *= -1;
 	}
 	// Second pass test
