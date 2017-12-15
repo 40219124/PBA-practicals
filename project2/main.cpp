@@ -307,8 +307,8 @@ int main()
 
 	// Create all dominos
 	std::vector<RigidBody> dominos;
-	int domI = 60;
-	float rad = 8.0f;
+	int domI = 100;
+	float rad = 10.0f;
 	for (int i = 0; i < domI; ++i) {
 		Mesh meh = Mesh::Mesh(Mesh::CUBE);
 		RigidBody rib = RigidBody();
@@ -357,12 +357,9 @@ int main()
 		}
 	}
 
-	world[0][0][0].addPerm(&rbPlane);
-	world[0][0][3].addPerm(&rbPlane);
-	world[3][0][0].addPerm(&rbPlane);
-	world[3][0][3].addPerm(&rbPlane);
 	for (int i = 0; i < planeScale / 5; ++i) {
 		for (int j = 0; j < planeScale / 5; ++j) {
+			world[i][0][j].addPerm(&rbPlane);
 			world[3][i][j].addPerm(&planes[0]);
 			world[0][i][j].addPerm(&planes[1]);
 			world[j][i][0].addPerm(&planes[2]);
