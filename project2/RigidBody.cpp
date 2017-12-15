@@ -38,7 +38,7 @@ glm::mat3 RigidBody::calcIT() {
 
 void RigidBody::resolveQueues() {
 	Body::resolveQueues();
-	this->m_hit.empty();
+	this->m_hit.clear();
 	glm::vec3 a = glm::vec3(0.0f);
 	while (!m_angQueue.empty()) {
 		a += m_angQueue.back();

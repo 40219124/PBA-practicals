@@ -11,7 +11,7 @@ public:
 	~BroadNode();
 
 	void addPerm(RigidBody* r) { m_perms.push_back(r); }
-	void addTemp(RigidBody* r) { m_temps.push_back(r); }
+	void addTemp(RigidBody* r);
 
 	std::vector<RigidBody*> getPerms() { return m_perms; }
 	std::vector<RigidBody*> getTemps() { return m_temps; }

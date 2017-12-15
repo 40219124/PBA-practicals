@@ -35,7 +35,7 @@ float timeMultiplier = 0.86f; // controls the speed of the simulation
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
 
 // broadphase
-BroadNode world[4 / 2][4][4 / 2];
+BroadNode world[20 / 5][4][20 / 5];
 std::vector<glm::vec3> worldIs;
 
 // integration: returns the position difference from the acceleration and a timestep
@@ -199,8 +199,8 @@ float CalculateBroadRadius(RigidBody &rb) {
 }
 
 void RBintoWorld(RigidBody& rb) {
-	glm::vec3 pos = (rb.getPos() + glm::vec3(10.0f, 0.0f, 10.0f)) / 10.0f;
-	float rad = rb.getBroadRadius() / 10.0f;
+	glm::vec3 pos = (rb.getPos() + glm::vec3(10.0f, 0.0f, 10.0f)) / 5.0f;
+	float rad = rb.getBroadRadius() / 5.0f;
 	glm::vec3 points[2] = { glm::vec3(pos[0] - rad, pos[1] - rad, pos[2] - rad), glm::vec3(pos[0] + rad, pos[1] + rad, pos[2] + rad) };
 	for (int i = 0; i < 2; ++i) {
 		for (int j = 0; j < 2; ++j) {
@@ -307,8 +307,8 @@ int main()
 
 	// Create all dominos
 	std::vector<RigidBody> dominos;
-	int domI = 30;
-	float rad = 4.0f;
+	int domI = 60;
+	float rad = 8.0f;
 	for (int i = 0; i < domI; ++i) {
 		Mesh meh = Mesh::Mesh(Mesh::CUBE);
 		RigidBody rib = RigidBody();
@@ -319,7 +319,7 @@ int main()
 		float gap = 1.4f;
 		//rib.translate(glm::vec3(gap * (-domI / 2.0f) + i * gap, 1.1f, 0.0f));
 		//rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / domI), 2.0f * rad + rad * sin(M_PI * i * 2.0f / domI), -10.0f + i * 0.1f));
-		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / (domI - 1)), 1.0f, -rad + rad * sin(M_PI * i * 2.0f / (domI - 1))));
+		rib.translate(glm::vec3(rad * cos(M_PI * i * 2.0f / (domI - 1)), 1.0f, rad * sin(M_PI * i * 2.0f / (domI - 1))));
 		rib.rotate(-(M_PI * i * 2.0f / (domI - 1) + M_PI_2), glm::vec3(0.0f, 1.0f, 0.0f));
 		rib.setVel(glm::vec3(0.0f));
 		//rib.setAngVel(glm::vec3(0.0f, 0.0f, 0.1f));
@@ -357,12 +357,16 @@ int main()
 		}
 	}
 
-	for (int i = 0; i < planeScale / 10; ++i) {
-		for (int j = 0; j < planeScale / 10; ++j) {
-			world[1][i][j].addPerm(&planes[0]);
+	world[0][0][0].addPerm(&rbPlane);
+	world[0][0][3].addPerm(&rbPlane);
+	world[3][0][0].addPerm(&rbPlane);
+	world[3][0][3].addPerm(&rbPlane);
+	for (int i = 0; i < planeScale / 5; ++i) {
+		for (int j = 0; j < planeScale / 5; ++j) {
+			world[3][i][j].addPerm(&planes[0]);
 			world[0][i][j].addPerm(&planes[1]);
 			world[j][i][0].addPerm(&planes[2]);
-			world[j][i][1].addPerm(&planes[3]);
+			world[j][i][3].addPerm(&planes[3]);
 		}
 	}
 
@@ -463,7 +467,7 @@ int main()
 							for each (RigidBody* perm in perms)
 							{
 								for each (RigidBody* temp in temps) {
-									if (!perm->hasHit(temp)) {
+									if (!temp->hasHit(perm)) {
 										ApplyCollision(*perm, *temp, p1);
 									}
 								}
@@ -485,6 +489,7 @@ int main()
 				rb1.resolveQueues();
 				rb2.resolveQueues();
 				rb3.resolveQueues();
+				rbPlane.resolveQueues();
 				for (int i = 0; i < dominos.size(); ++i) {
 					dominos[i].resolveQueues();
 				}
