@@ -35,7 +35,7 @@ float timeMultiplier = 0.86f; // controls the speed of the simulation
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
 
 // broadphase
-BroadNode world[10 / 2][10][10 / 2];
+BroadNode world[4 / 2][4][4 / 2];
 std::vector<glm::vec3> worldIs;
 
 // integration: returns the position difference from the acceleration and a timestep
@@ -199,8 +199,8 @@ float CalculateBroadRadius(RigidBody &rb) {
 }
 
 void RBintoWorld(RigidBody& rb) {
-	glm::vec3 pos = (rb.getPos() + glm::vec3(10.0f, 0.0f, 10.0f)) / 4.0f;
-	float rad = rb.getBroadRadius();
+	glm::vec3 pos = (rb.getPos() + glm::vec3(10.0f, 0.0f, 10.0f)) / 10.0f;
+	float rad = rb.getBroadRadius() / 10.0f;
 	glm::vec3 points[2] = { glm::vec3(pos[0] - rad, pos[1] - rad, pos[2] - rad), glm::vec3(pos[0] + rad, pos[1] + rad, pos[2] + rad) };
 	for (int i = 0; i < 2; ++i) {
 		for (int j = 0; j < 2; ++j) {
@@ -357,12 +357,12 @@ int main()
 		}
 	}
 
-	for (int i = 0; i < 20; ++i) {
-		for (int j = 0; j < planeScale / 2; ++j) {
-			world[10][i][j].addPerm(&planes[0]);
+	for (int i = 0; i < planeScale / 10; ++i) {
+		for (int j = 0; j < planeScale / 10; ++j) {
+			world[1][i][j].addPerm(&planes[0]);
 			world[0][i][j].addPerm(&planes[1]);
 			world[j][i][0].addPerm(&planes[2]);
-			world[j][i][10].addPerm(&planes[3]);
+			world[j][i][1].addPerm(&planes[3]);
 		}
 	}
 
