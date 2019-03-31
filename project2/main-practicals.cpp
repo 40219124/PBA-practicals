@@ -61,7 +61,7 @@ void CreateApplication(Application &app, const glm::vec3 &cameraPos) {
 
 Mesh CreatePlane(const float scale) {
 	// create ground plane
-	Mesh plane = Mesh::Mesh();
+	Mesh plane = Mesh::Mesh(Mesh::QUAD);
 	// scale it up x5
 	plane.scale(glm::vec3(scale, scale, scale));
 	plane.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core.frag"));
@@ -69,7 +69,7 @@ Mesh CreatePlane(const float scale) {
 }
 
 Mesh CreateDefaultParticleMesh() {
-	Mesh particle = Mesh::Mesh();
+	Mesh particle = Mesh::Mesh(Mesh::QUAD);
 	particle.translate(glm::vec3(0.0f, 2.5f, 0.0f));
 	particle.scale(glm::vec3(.1f, .1f, .1f));
 	particle.rotate((GLfloat)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -346,7 +346,7 @@ void WindDemo() {
 	Application app = Application::Application();
 	CreateApplication(app, glm::vec3(0.0f, 4.0f, 10.0f));
 
-	Mesh plane = CreatePlane(5.0f);
+	Mesh plane = CreatePlane(2.5f);
 
 	glm::vec3 cubeSize;
 	glm::vec3 cubeBL;
@@ -1509,7 +1509,7 @@ void FrictionDemo() {
 // main function
 int main()
 {
-	int demo = 0;
+	int demo = 2;
 	while (demo < 13) {
 		switch (demo) {
 		case 0:
