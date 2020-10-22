@@ -272,6 +272,8 @@ int main()
 	float currentTime = (float)glfwGetTime();
 	float timeAccumulator = 0.0f;
 
+	bool isPaused = true;
+
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
@@ -283,7 +285,11 @@ int main()
 		// Manage interaction
 		app.doMovement(frameTime);
 
-		while (timeAccumulator >= dt) {
+		if (Application::keys[GLFW_KEY_P])
+		{
+			isPaused = false;
+		}
+		while (!isPaused && timeAccumulator >= dt) {
 
 			/*
 			**	SIMULATION
